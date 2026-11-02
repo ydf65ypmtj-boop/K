@@ -618,7 +618,7 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
         </div>
         <div class="msg" id="authMsg" role="alert"></div>
         <button type="submit" class="btn-submit" id="authSubmitBtn" style="margin-top:0">ログインする</button>
-        <p class="auth-note-box hidden" id="authNoConfirmNote">確認メールは いらないよ。メールアドレスと パスワードを 決めて「登録する」を押すと、そのまま すぐ ログインして 使えるよ。</p>
+        <p class="auth-note-box hidden" id="authNoConfirmNote">登録すると、入力したメールアドレスに <b>確認メール</b> が届くよ（送信は Gmail SMTP 経由・送信元は youzhenshengu54@gmail.com）。メールの中のリンクを押して本人確認が終わってから、ログインしてね。届かないときは迷惑メールフォルダも見てね。</p>
         <div class="auth-btn-row hidden" id="authResendRow">
           <button type="button" class="btn-outline" id="authResendBtn">確認メールを もう一度 送る</button>
         </div>
@@ -630,20 +630,20 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
     </div>
 
     <div class="auth-card" style="margin-top:16px">
-      <h2 style="margin:0;font-size:18px;font-weight:900">確認メールなしで すぐ使うための設定（1回だけ）</h2>
-      <p class="auth-desc" style="text-align:left">このSNSは確認メールなしで、登録したらすぐ使える形だよ。そのために、Supabase側で次の設定を1回だけしてね。終われば、新しく登録した人はメールを待たずにそのままログインできるよ。</p>
+      <h2 style="margin:0;font-size:18px;font-weight:900">確認メールを復活させる設定（Gmail SMTP接続・管理者が1回だけ）</h2>
+      <p class="auth-desc" style="text-align:left">確認メールは <b>GmailのSMTP</b> 経由で送るよ。Supabaseの標準送信だけだと「1時間に2通まで・プロジェクトのメンバー宛だけ」で、みんなには届かないよ。管理者のGmail（youzhenshengu54@gmail.com）をSMTPとして接続すると、無料で・自分のドメインなしで、登録した全員のメアドに届くようになるよ（Gmailの上限は1日500通まで）。下の設定は管理者が1回だけやってね。</p>
       <ol class="steps">
-        <li><span class="num">1</span><p>Supabaseで このプロジェクトを開く</p></li>
-        <li><span class="num">2</span><p><b>Authentication → Providers</b>（または Sign In / Providers）→ <b>Email</b> を開く</p></li>
-        <li><span class="num">3</span><p><b>「Confirm email」を オフ</b>（灰色）にして、<b>Save</b> を押す</p></li>
-        <li><span class="num">4</span><p>この画面に戻って、もう一度 登録／ログインしてね</p></li>
+        <li><span class="num">1</span><p>送信に使うのは管理者の <b>Gmail（youzhenshengu54@gmail.com）</b> だよ。無料で使えて、自分のドメイン（〇〇.com のような住所）は不要だよ</p></li>
+        <li><span class="num">2</span><p>Googleアカウント（myaccount.google.com）で <b>2段階認証プロセス</b> をオンにしておく。オンになっていないと、次の「アプリパスワード」が作れないよ</p></li>
+        <li><span class="num">3</span><p>myaccount.google.com の検索窓で <b>「アプリパスワード」</b> と検索して開き、名前を <b>「Supabase」</b> にして作成する。表示される <b>16文字のパスワード</b> をコピーしておく ※これは普段のGmailのパスワードとは別の専用パスワードだよ。Supabaseの画面だけに入れるもので、このページには絶対に入れないでね</p></li>
+        <li><span class="num">4</span><p>Supabaseでこのプロジェクトを開いて、<b>Authentication → Emails → SMTP Settings</b>（画面によっては Project Settings → Auth → SMTP Settings）を開き、<b>Enable Custom SMTP</b> をオンにする</p></li>
+        <li><span class="num">5</span><p>SMTPに次の通り入れて <b>Save</b> を押す：<br>Host：<b>smtp.gmail.com</b> ／ Port：<b>587</b> ／ Username：<b>youzhenshengu54@gmail.com</b> ／ Password：手順3の <b>アプリパスワード（16文字）</b> ／ Sender email：<b>youzhenshengu54@gmail.com</b> ／ Sender name：<b>K</b></p></li>
+        <li><span class="num">6</span><p><b>Authentication → Providers → Email</b> を開いて、<b>「Confirm email」を オン</b>（青色）にして <b>Save</b> を押す</p></li>
+        <li><span class="num">7</span><p><b>Authentication → URL Configuration</b> で、<b>Site URL</b> にこのページ（K）のURLを設定する。これで確認メールのリンクを押すと、このページに戻ってログインできるよ</p></li>
+        <li><span class="num">8</span><p>この画面に戻って、新しく登録してテストしてね。入力したメアドに確認メールが届いて、リンクを押すとログインできるようになるよ</p></li>
       </ol>
-      <p class="auth-desc" style="text-align:left;margin-top:12px">すでに登録したのに「確認待ち」でログインできないアカウントがあるときは、Supabaseの <b>SQL Editor</b> に下のSQLを貼って <b>Run</b> を1回押してね。そのアカウントが確認済みになって、メールなしでログインできるようになるよ。</p>
-      <code class="config-code" id="authAutoconfirmCode"></code>
-      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
-        <button type="button" class="btn-outline" id="authAutoconfirmCopy">未確認を直すSQLを コピー</button>
-      </div>
-      <div class="msg" id="authAutoconfirmMsg" role="alert"></div>
+      <p class="auth-desc" style="text-align:left;margin-top:12px"><b>確認メールが届かないときは：</b>迷惑メールフォルダを見る → 上のフォームの「確認メールを もう一度 送る」を押す → それでも届かないときは、手順5のSMTP設定（特にアプリパスワードと送信元アドレス）と、手順6で Confirm email がオンになっているかを確かめてね。確認メールは送信元が youzhenshengu54@gmail.com で届くよ。1日にたくさん送りすぎるとGmailの上限（1日500通）で止まることがあるよ。</p>
+      <p class="auth-desc" style="text-align:left;margin-top:8px">※前に「確認メールなし」で作ったアカウントは、そのままパスワードでログインできるよ。新しく登録する人から、確認メールでの本人確認が必要になるよ。</p>
     </div>
   </main>
 </div>
@@ -984,14 +984,15 @@ var SUPABASE_SQL = [
 "create policy official_delete on public.official_accounts for delete using (auth.uid() = user_id);"
 ].join("\n");
 
-/* SQL to rescue accounts created while confirmation was still ON:
-   marks every unconfirmed account as confirmed, so those accounts
-   can log in with their password right away — no email needed. */
+/* Emergency-only SQL for the admin: marks every unconfirmed
+   account as confirmed by hand. Normal flow is the confirmation
+   email sent via Gmail SMTP — use this only when that email truly
+   cannot reach someone whose identity the admin verified. */
 var SUPABASE_AUTOCONFIRM_SQL = [
-"-- K 未確認アカウントを すぐ使えるようにするSQL",
-"-- 確認メールがONだったときに作られて、まだ確認できていないアカウント用",
-"-- Supabaseの SQL Editor に貼って実行すると、そのアカウントが確認済みになって",
-"-- メールを開かなくても パスワードで ログインできるようになるよ（1回だけ）",
+"-- K 未確認アカウントを 管理者が手動で確認済みにするSQL（困ったときだけ）",
+"-- 確認メール（Gmail）がどうしても届かず、本人だと管理者が直接確かめられたときだけ使う",
+"-- Supabaseの SQL Editor に貼って実行すると、未確認のアカウントが確認済みになって",
+"-- パスワードで ログインできるようになるよ（通常はメールの中のリンクで確認してね）",
 "",
 "update auth.users",
 "set email_confirmed_at = now()",
@@ -1212,6 +1213,7 @@ var RULES = [
   "アカウントを削除すると、そのアカウントのプロフィール・ポスト・公式アカウント・フォロー・ミッション・ログイン情報も一緒に消えて、元に戻せないよ。管理者は youzhenshengu54@gmail.com に固定で、ほかのアカウントに移ることはないよ",
   "パスワードは ほかの人に 教えない・見せない",
   "パスワードを 忘れたら、ログイン画面の「パスワードを 忘れた人は こちら」から、メールに 届く リンクで 新しい パスワードに 変えられるよ。元の パスワードは 安全のために 元の文字が 分からない形で 保存してあるから、表示は できないよ",
+  "新しく登録すると、入力したメールアドレスに確認メール（Gmailから送信・送信元は youzhenshengu54@gmail.com）が届くよ。メールの中のリンクを押して本人確認が終わってからログインできるよ。確認メールが届かないときは、迷惑メールフォルダを見るか、ログイン画面の「確認メールを もう一度 送る」を使ってね",
   "お手本ポストは このSNSの中だけの れんしゅうだよ（有名人や 本物のお店の ポストじゃ ないよ）",
   "AIの へんしんは AIが かいたものだよ"
 ];
@@ -1225,7 +1227,7 @@ function supabaseCardHtml() {
     '<div class="key-answer"><p class="ka-big">使うキーは「P」の Publishableキー だよ</p>' +
     '<p>ページに組み込むのは <b>Publishableキー</b>（<code>sb_publishable_</code> で始まるキー）。これは みんなのブラウザで使うための「公開キー」で、このページにはもう組み込み済みだよ。</p></div>' +
     '<p class="key-warn">「S」の Secretキー（<code>sb_secret_</code> で始まるキー。昔の名前は service_roleキー）は、絶対にページに入れないでね。そのキーを知った人は、全員のデータを読み書きできてしまう いちばん強い鍵だよ。Supabaseの画面の中だけに置いておくものだよ。</p>' +
-    '<div class="notice-ok show" style="margin-top:12px"><b>確認メールは オフにして使うよ（登録したら すぐ使える）</b><br>このページは、登録した瞬間にそのままログインできる作りだよ。確認メールを待つ必要はないよ。そのためには、Supabase側で1回だけ次の設定が必要だよ：<br><b>Supabaseを開く → Authentication → Providers（または Sign In / Providers）→ Email → 「Confirm email」を オフ（灰色）にする → Save（保存）</b><br>これをオフにすると、新しく登録した人はメールを開かなくても、登録したその場でログインできるよ。すでに「確認待ち」になっているアカウントがあるときは、下の「未確認アカウントを すぐ使えるようにするSQL」を1回実行してね。</div>' +
+    '<div class="notice-ok show" style="margin-top:12px"><b>確認メールは Gmail SMTP 経由で送るよ（登録 → メールで本人確認 → ログイン）</b><br>このページは、登録すると確認メールが届いて、メールの中のリンクを押してからログインできる作りだよ。Supabaseの標準送信だけでは「1時間に2通まで・メンバー宛だけ」で全員には届かないので、メール送信は GmailのSMTP に接続してね（無料・ドメイン不要・1日500通まで）：<br><b>① Googleでアプリパスワード（16文字）を作る（2段階認証をオンにして、myaccount.google.com で「アプリパスワード」を検索） → ② Supabaseの Authentication → Emails → SMTP Settings で Enable Custom SMTP をオンにして、Host：smtp.gmail.com／Port：587／Username：youzhenshengu54@gmail.com／Password：アプリパスワード／Sender email：youzhenshengu54@gmail.com／Sender name：K を入れて Save → ③ Authentication → Providers → Email の「Confirm email」を オンにして Save → ④ Authentication → URL Configuration の Site URL にこのページのURLを設定</b><br>詳しい手順はログイン画面の下のカードにも書いてあるよ。確認メールは送信元が youzhenshengu54@gmail.com で届くよ。アプリパスワードはSupabaseの画面だけに入れるもので、このページには絶対に入れないでね。</div>' +
     '<p class="status-line">Publishableキー：<span>設定済み（sb_publishable_G0iM…CMwQCRJ）</span></p>' +
     '<p class="status-line">Project URL：<span data-supa-url-status>' + (supabaseUrlDraft ? "設定済み（" + esc(supabaseUrlDraft) + "）" : "まだ未設定（あとから設定できるよ）") + '</span></p>' +
     '<form data-supa-form novalidate style="margin-top:12px">' +
@@ -1244,10 +1246,10 @@ function supabaseCardHtml() {
     '<code class="config-code" data-supa-sql style="max-height:260px;overflow:auto"></code>' +
     '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn-outline" data-supa-sql-copy>設定用SQLを コピー</button>' +
     '<button type="button" class="btn-outline" data-supa-sql-download>設定用SQLを ファイルで保存</button></div>' +
-    '<p class="form-label" style="margin-top:20px">未確認アカウントを すぐ使えるようにするSQL（確認メールなしで ログインできるようにする）</p>' +
-    '<p class="card-sub">確認メールがオンだったときに登録して、「まだ確認が終わっていない」と言われてログインできないアカウントがあるときだけ使ってね。Supabaseの SQL Editor に貼って実行すると、そのアカウントが確認済みになって、メールを開かなくてもパスワードでログインできるよ。新しく登録する人については、上の「Confirm email オフ」の設定をしておけば、このSQLは要らないよ。</p>' +
+    '<p class="form-label" style="margin-top:20px">困ったときだけ：未確認アカウントを 管理者が手動で確認済みにするSQL</p>' +
+    '<p class="card-sub">普段は使わないでね。確認メール（Gmail）がどうしても届かず、本人だと管理者が直接確かめられたアカウントだけに使ってね。Supabaseの SQL Editor に貼って実行すると、未確認のアカウントがまとめて確認済みになって、パスワードでログインできるようになるよ。新しく登録する人は、メールの中のリンクを押して確認するのが通常の流れだよ。</p>' +
     '<code class="config-code" data-supa-autoconfirm style="max-height:200px;overflow:auto"></code>' +
-    '<div style="margin-top:8px"><button type="button" class="btn-outline" data-supa-autoconfirm-copy>未確認を直すSQLを コピー</button></div>' +
+    '<div style="margin-top:8px"><button type="button" class="btn-outline" data-supa-autoconfirm-copy>手動で確認済みにするSQLを コピー（困ったときだけ）</button></div>' +
     '<p class="form-label" style="margin-top:20px">アカウントとデータを 全部消すSQL（消したら 元に戻せないよ）</p>' +
     '<p class="card-sub">今あるアカウントを全部消して、最初から始めたいときだけ使ってね。Supabaseの SQL Editor に貼って実行すると、登録したアカウント・ポスト・コメント・スタンプ・フォロー・公式アカウントが全部消えるよ。消したあとは、このページのログイン画面から新しく登録してね。</p>' +
     '<code class="config-code" data-supa-wipe style="max-height:200px;overflow:auto"></code>' +
@@ -1255,8 +1257,8 @@ function supabaseCardHtml() {
     '<ol class="steps">' +
     '<li><span class="num">1</span><p>Project URL と Publishableキー（「P」の方）は、このページに組み込み済みで、接続は有効になっているよ。Secretキー（「S」の方）はページに入れていないよ。</p></li>' +
     '<li><span class="num">2</span><p>上の「設定用SQL」をコピーして、Supabaseの SQL Editor に貼って実行してね（1回だけ）。プロフィール・ポスト・コメント・スタンプ・フォロー・公式アカウントのテーブルと、安全ルール（RLS）が作られるよ。貼った文字が消えてしまっても、実行済みなら大丈夫だよ（実行した内容はSupabaseに残っているよ）。心配なときは、上の「設定用SQLの状態」の表示を見てね。</p></li>' +
-    '<li><span class="num">3</span><p>確認メールをオフにしてね：Supabaseで Authentication → Providers → Email を開いて、「Confirm email」をオフにして Save を押してね（1回だけ）。オフにしたあとは、ログイン画面で登録すると確認メールなしで、そのまま すぐ ログインして使えるよ。URLを変えたいときは、上の欄に入れ直して「接続を確認する」を押してね。</p></li>' +
-    '<li><span class="num">4</span><p>もしまだ「まだ メールの確認が 終わっていないよ」と出るときは、上の「Confirm email オフ」が保存できていないか、確認待ちのまま残っている古いアカウントだよ。オフを保存し直すか、上の「未確認アカウントを すぐ使えるようにするSQL」を SQL Editor で1回実行してから、もう一度ログインしてね。</p></li>' +
+    '<li><span class="num">3</span><p>確認メールを Gmail SMTP で送れるようにしてね（1回だけ）：Googleでアプリパスワード（16文字）を作り（2段階認証をオンにして myaccount.google.com で「アプリパスワード」を検索）、Supabaseの Authentication → Emails → SMTP Settings で Enable Custom SMTP をオンにして、Host：smtp.gmail.com／Port：587／Username：youzhenshengu54@gmail.com／Password：アプリパスワード／Sender email：youzhenshengu54@gmail.com／Sender name：K を入れて Save。続けて Authentication → Providers → Email の「Confirm email」をオンにして Save し、Authentication → URL Configuration の Site URL にこのページのURLを設定してね。設定後は、ログイン画面で登録すると Gmail 経由で確認メールが届き、リンクを押してからログインできるよ。</p></li>' +
+    '<li><span class="num">4</span><p>「まだ メールの確認が 終わっていないよ」と出るときは、そのアカウント宛の確認メールの中のリンクがまだ押されていないよ。迷惑メールフォルダを見て、ログイン画面の「確認メールを もう一度 送る」も試してね。それでも届かないときは、手順3のSMTP設定と Confirm email がオンかどうかを確かめてね。</p></li>' +
     '<li><span class="num">5</span><p>アカウントを全部消して最初から始めたいときは、上の「全部消すSQL」を SQL Editor で実行してね（1回だけ）。アカウントもデータも全部消えて元に戻せないので、よく考えてから実行してね。</p></li>' +
     "</ol></section>";
 }
@@ -1346,7 +1348,7 @@ function bindSupabaseForms() {
     if (acEl) acEl.textContent = SUPABASE_AUTOCONFIRM_SQL;
     var acCopyBtn = slot.querySelector("[data-supa-autoconfirm-copy]");
     if (acCopyBtn) acCopyBtn.addEventListener("click", function () {
-      var done = function () { setSupaMsg("未確認を直すSQLをコピーしたよ。Supabaseの SQL Editor に貼って実行すると、確認待ちのアカウントがすぐログインできるようになるよ。", true); };
+      var done = function () { setSupaMsg("手動で確認済みにするSQLをコピーしたよ。困ったときだけ、Supabaseの SQL Editor に貼って実行してね。通常は確認メール（Gmail）の中のリンクで確認してね。", true); };
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(SUPABASE_AUTOCONFIRM_SQL).then(done, function () { setSupaMsg("コピーできなかったよ。SQLを長押しで選んでコピーしてね。", false); });
       } else setSupaMsg("このブラウザでは自動コピーできないよ。SQLを長押しで選んでコピーしてね。", false);
@@ -2019,18 +2021,21 @@ function bindProfileForms() {
 
 /* ================= auth (login / register / forgot) =================
    Email + password auth against Supabase Auth with the Publishable
-   key. Confirmation email is OFF for this project (Supabase:
-   Authentication -> Providers -> Email -> "Confirm email" off), so
-   signup returns a session right away and the new account can be
-   used immediately — no email to wait for, no link to click.
-   Login uses the password grant directly. If signup ever comes
-   back without a session, that means the Supabase side still has
-   "Confirm email" on: the register handler then explains exactly
-   that (and the settings card carries a one-run SQL that marks
-   stuck unconfirmed accounts as confirmed). Password reset still
-   uses Supabase's recover email; when its link lands back on this
-   page (URL fragment with type=recovery), the new-password form
-   below completes the reset. */
+   key. Confirmation email is ON for this project (Supabase:
+   Authentication -> Providers -> Email -> "Confirm email" on), and
+   the mail is sent through Gmail connected as Custom SMTP
+   (Authentication -> Emails -> SMTP Settings: smtp.gmail.com),
+   because Supabase's built-in sender is limited to 2 emails/hour
+   to project members only and cannot reach everyone. Signup
+   therefore returns NO session: the account must click the link
+   in the confirmation email first (the link lands back on this
+   page and handleAuthFragment logs the account in). The register
+   handler explains that and offers the resend button. Login uses
+   the password grant directly; an unconfirmed account gets the
+   email_not_confirmed error, which also offers resend. Password
+   reset uses Supabase's recover email (also sent via Gmail SMTP);
+   when its link lands back on this page (URL fragment with
+   type=recovery), the new-password form below completes it. */
 var authMode = "login"; // login | register | forgot | resetpw
 var authBusy = false;
 var loggedInEmail = "";
@@ -2053,7 +2058,7 @@ function renderAuth() {
   var titles = { login: "ログイン", register: "あたらしく 登録", forgot: "パスワードを 忘れたとき", resetpw: "新しい パスワード" };
   var descs = {
     login: "登録した メールアドレスと パスワードを 入れると ログインできるよ。",
-    register: "メールアドレスと パスワードと、あなたの ニックネームを 決めてね。ニックネームは アカウントごとに 別々で、ほかの人と 同じには ならないよ。確認メールは いらないよ。登録すると そのまま すぐ ログインして 使えるよ。",
+    register: "メールアドレスと パスワードと、あなたの ニックネームを 決めてね。ニックネームは アカウントごとに 別々で、ほかの人と 同じには ならないよ。登録すると、そのメールアドレスに 確認メール（Gmailから送信）が 届くよ。メールの中の リンクを 押してから ログインしてね。",
     forgot: "登録した メールアドレスを 入れてね。パスワード再設定の メールを 送るよ。メールの中の リンクを 開くと、新しい パスワードに 変えられるよ。",
     resetpw: "新しい パスワードを 決めてね。決めたら そのまま ログインするよ。"
   };
@@ -2071,9 +2076,11 @@ function renderAuth() {
   $("authSubmitBtn").disabled = authBusy;
   var noConfirmNote = $("authNoConfirmNote");
   if (noConfirmNote) noConfirmNote.classList.toggle("hidden", authMode !== "register");
-  // Confirmation email is off, so the resend row stays hidden: a new
-  // account is usable immediately and there is nothing to resend.
-  $("authResendRow").classList.add("hidden");
+  // Confirmation email is on (sent via Gmail SMTP): show the resend row
+  // whenever a confirmation email may need sending again — after a
+  // signup, or when a login failed because the account is not
+  // confirmed yet (authCanResend is set in those handlers).
+  $("authResendRow").classList.toggle("hidden", !authCanResend);
   $("authResendBtn").disabled = authBusy;
   $("authSwitchBtn").textContent = authMode === "login" ? "はじめての人は こちら（登録する）" : "ログインに もどる";
 }
@@ -2134,7 +2141,7 @@ function authErrorInfo(res) {
   var msg = d.msg || d.error_description || d.message || "";
   var status = res ? res.status : 0;
   if (status === 429 || code === "over_email_send_rate_limit" || /rate limit/i.test(msg)) return { text: "メールを 送る回数が 多すぎるよ。少し 時間を おいてから、もう一度 ためしてね", resend: false };
-  if (code === "email_not_confirmed" || /email not confirmed/i.test(msg)) return { text: "このアカウントは まだ「確認待ち」のままだよ。Supabaseで Authentication → Providers → Email の「Confirm email」を オフにして保存してね。そのあと、この画面の下にある「未確認を直すSQL」を Supabaseの SQL Editor で1回実行すると、このアカウントも メールなしで ログインできるようになるよ", resend: false };
+  if (code === "email_not_confirmed" || /email not confirmed/i.test(msg)) return { text: "このアカウントは まだ メールの確認が 終わっていないよ。登録したときに届いた 確認メール（Gmailから送信）の中の リンクを 押してね。メールが見つからないときは、迷惑メールフォルダを見て、下の「確認メールを もう一度 送る」も使ってね", resend: true };
   if (code === "invalid_credentials" || /invalid login credentials/i.test(msg)) return { text: "メールアドレスか パスワードが ちがうよ。たしかめて もう一度 ためしてね", resend: false };
   if (code === "user_already_exists" || /already registered/i.test(msg)) return { text: "その メールアドレスは もう登録されているよ。「ログインに もどる」から ログインしてね", resend: false };
   if (code === "weak_password" || /weak password/i.test(msg)) return { text: "パスワードが かんたんすぎるよ。もう少し 長くて 強い パスワードにしてね", resend: false };
@@ -2260,23 +2267,27 @@ function authSubmit() {
     if (!res.ok) { var info = authErrorInfo(res); authCanResend = info.resend; renderAuth(); setAuthMsg(info.text); return; }
     if (authMode === "login") { finishLogin(email, res.data && res.data.access_token, res.data && res.data.user); return; }
     if (authMode === "register") {
-      // Confirmation email is off: signup returns a session and the
-      // account is usable right away — log straight in.
+      // Confirmation email is on (sent via Gmail SMTP): normally signup
+      // returns a user but NO session — the account is created and a
+      // confirmation email is on its way. The person clicks the
+      // link in that email, lands back on this page, and is logged
+      // in by handleAuthFragment.
       if (res.data && res.data.access_token) { finishLogin(email, res.data.access_token, res.data.user); return; }
-      if (res.data && res.data.user && !res.data.session && res.data.user.identities && res.data.user.identities.length === 0) {
-        renderAuth();
-        setAuthMsg("その メールアドレスは もう登録されているよ。「ログインに もどる」から ログインしてね");
+      var newUser = (res.data && res.data.user) || (res.data && res.data.id ? res.data : null);
+      if (newUser && newUser.identities && newUser.identities.length === 0) {
+        // Supabase answers this way when the address is already
+        // registered (it does not reveal whether it exists beyond
+        // the empty identities list).
+        authCanResend = false; renderAuth();
+        setAuthMsg("その メールアドレスは もう登録されているよ。「ログインに もどる」から ログインしてね。まだ確認メールが終わっていないときは、届いたメールの中のリンクを押してね");
         return;
       }
-      // No session came back: the Supabase side still has
-      // "Confirm email" ON, so this account is stuck waiting for an
-      // email that this setup no longer uses. Say exactly that.
-      authMode = "login"; authCanResend = false; renderAuth();
-      setAuthMsg("登録は受け付けたけど、まだ すぐには使えない状態だよ。Supabase側で「確認メール」が オンのままだよ。Supabaseで Authentication → Providers → Email の「Confirm email」を オフにして保存してね。オフにしたあと、この画面の下にある「未確認を直すSQL」を SQL Editor で1回実行すると、このアカウントも メールなしで ログインできるようになるよ");
+      authMode = "login"; authCanResend = true; renderAuth();
+      setAuthNotice(email + " に 確認メールを 送ったよ（Gmailから送信・送信元は youzhenshengu54@gmail.com）。メールの中の リンクを 押すと 本人確認が終わって、そのまま ログインできるよ。届かないときは 迷惑メールフォルダも見てね。下のボタンで もう一度 送ることもできるよ");
       return;
     }
     // forgot: Supabase sent the standard password-reset email.
-    authMode = "login"; renderAuth();
+    authMode = "login"; authCanResend = false; renderAuth();
     setAuthNotice(email + " に パスワード再設定の メールを 送ったよ。メールの中の リンクを 開いて、新しい パスワードを 決めてね");
   }).catch(function () {
     authBusy = false; renderAuth();
@@ -2353,19 +2364,6 @@ $("authSwitchBtn").addEventListener("click", function () {
 $("authForgotLink").addEventListener("click", function () { switchAuthMode("forgot"); });
 $("authFormStage").addEventListener("submit", function (e) { e.preventDefault(); authSubmit(); });
 $("authResendBtn").addEventListener("click", function () { authResendConfirmation(); });
-(function initAuthAutoconfirmCard() {
-  var codeEl = $("authAutoconfirmCode");
-  if (codeEl) codeEl.textContent = SUPABASE_AUTOCONFIRM_SQL;
-  var btn = $("authAutoconfirmCopy");
-  if (!btn) return;
-  btn.addEventListener("click", function () {
-    var msg = $("authAutoconfirmMsg");
-    var done = function () { if (msg) { msg.className = "msg ok"; msg.textContent = "コピーしたよ。Supabaseの SQL Editor に貼って Run を押してね。"; } };
-    var fail = function () { if (msg) { msg.className = "msg err"; msg.textContent = "コピーできなかったよ。上のSQLを長押しで選んでコピーしてね。"; } };
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(SUPABASE_AUTOCONFIRM_SQL).then(done, fail);
-    else fail();
-  });
-})();
 
 /* ================= global click handling ================= */
 document.addEventListener("click", function (e) {
