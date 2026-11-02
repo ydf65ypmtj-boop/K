@@ -457,7 +457,7 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
       <button type="button" class="nav-post" id="sidePostBtn" aria-label="ポストする"><span class="nav-label">ポストする</span><span class="nav-plus" aria-hidden="true">+</span></button>
       <button type="button" class="nav-profile" id="sideProfileBtn" aria-label="プロフィールを かえる">
         <span class="avatar-slot" data-avatar="me" data-size="40"></span>
-        <span class="np-text"><b class="my-name">ゆうま</b><span class="my-handle">@ゆうま</span></span>
+        <span class="np-text"><b class="my-name">ニックネーム</b><span class="my-handle">@ニックネーム</span></span>
       </button>
     </nav>
 
@@ -473,8 +473,8 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
             <button type="button" class="btn-outline dim" id="authBtn">ログイン</button>
           </div>
         </div>
-        <div class="profile-name my-name">ゆうま</div>
-        <div class="profile-sub"><span class="my-handle">@ゆうま</span> · K（子供も大人も使える あんしんSNS）</div>
+        <div class="profile-name my-name">ニックネーム</div>
+        <div class="profile-sub"><span class="my-handle">@ニックネーム</span> · K（子供も大人も使える あんしんSNS）</div>
         <div class="profile-note hidden" id="adminLine" style="font-weight:700;color:var(--accent)">管理者アカウントで ログイン中だよ（管理者は youzhenshengu54@gmail.com に固定）</div>
         <div class="profile-note hidden" id="authEmailLine"></div>
         <div class="profile-stats" id="profileStats"></div>
@@ -595,6 +595,11 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
         <div id="authEmailWrap">
           <label class="form-label" for="authEmail">メールアドレス</label>
           <input id="authEmail" class="field-input" type="email" autocomplete="email" placeholder="れい：you@example.com" style="margin-top:4px" />
+        </div>
+        <div id="authNicknameWrap" class="hidden">
+          <label class="form-label" for="authNickname">ニックネーム（みんなに 見える 名前・12もじまで）</label>
+          <input id="authNickname" class="field-input" maxlength="12" autocomplete="nickname" placeholder="れい：ゆうちゃん" style="margin-top:4px" />
+          <p class="auth-note-sm" style="text-align:left">この名前は あなたのアカウント専用だよ。ほかの人の名前には ならないよ。本名は 書かないでね。</p>
         </div>
         <div id="authPasswordWrap">
           <label class="form-label" for="authPassword">パスワード（8もじ以上）</label>
@@ -1063,7 +1068,13 @@ var QUIZZES = [
 ];
 
 /* ================= state ================= */
-var profile = { nickname: "ゆうま", shape: "heart", color: "sky" };
+/* The signed-in account's own profile. This MUST NOT carry a fixed
+   person's name as the default: every account resolves its own
+   nickname in applyAccountProfile() at login (saved profile row ->
+   signup metadata -> email-derived name), so different people never
+   all show up as the same person. */
+var profile = { nickname: "ニックネーム", shape: "heart", color: "sky" };
+var currentUserId = "";
 var view = "home";
 var tlFilter = "all";
 var postAs = 0; // 0 = self, otherwise official application id (approved only)
@@ -1991,6 +2002,13 @@ function bindProfileForms() {
       if (hasBanned(v)) { msg.className = "msg err"; msg.textContent = BANNED_MSG; return; }
       var oldName = profile.nickname;
       profile = { nickname: v, shape: draft.shape, color: draft.color };
+      /* Save to THIS account only: its profiles row and its auth
+         metadata, so the new name follows this account to any
+         device and never leaks into anyone else's account. */
+      saveRemoteProfile();
+      if (authAccessToken) {
+        supaAuthFetch("/auth/v1/user", { data: { nickname: v, shape: draft.shape, color: draft.color }, __method: "PUT" }, authAccessToken).catch(function () {});
+      }
       posts.forEach(function (p) { if (p.mine && p.authorKind === "me") { p.name = v; p.shape = draft.shape; p.color = draft.color; } });
       if (oldName !== v) { /* handles follow nickname automatically */ }
       hideProfileView();
@@ -2035,7 +2053,7 @@ function renderAuth() {
   var titles = { login: "ログイン", register: "あたらしく 登録", forgot: "パスワードを 忘れたとき", resetpw: "新しい パスワード" };
   var descs = {
     login: "登録した メールアドレスと パスワードを 入れると ログインできるよ。",
-    register: "メールアドレスと パスワードを 決めてね。確認メールは いらないよ。登録すると そのまま すぐ ログインして 使えるよ。",
+    register: "メールアドレスと パスワードと、あなたの ニックネームを 決めてね。ニックネームは アカウントごとに 別々で、ほかの人と 同じには ならないよ。確認メールは いらないよ。登録すると そのまま すぐ ログインして 使えるよ。",
     forgot: "登録した メールアドレスを 入れてね。パスワード再設定の メールを 送るよ。メールの中の リンクを 開くと、新しい パスワードに 変えられるよ。",
     resetpw: "新しい パスワードを 決めてね。決めたら そのまま ログインするよ。"
   };
@@ -2044,6 +2062,7 @@ function renderAuth() {
   $("authDesc").textContent = descs[authMode];
   $("authForgotNote").classList.toggle("hidden", authMode !== "forgot");
   $("authEmailWrap").classList.toggle("hidden", authMode === "resetpw");
+  $("authNicknameWrap").classList.toggle("hidden", authMode !== "register");
   $("authPasswordWrap").classList.toggle("hidden", authMode === "forgot" || authMode === "resetpw");
   $("authNewPwWrap").classList.toggle("hidden", authMode !== "resetpw");
   $("authForgotLink").classList.toggle("hidden", authMode !== "login");
@@ -2122,12 +2141,76 @@ function authErrorInfo(res) {
   if (code === "email_address_invalid" || code === "validation_failed" || /invalid.*email|email.*invalid/i.test(msg)) return { text: "メールアドレスの 形が ちがうみたい。たしかめてね", resend: false };
   return { text: "できなかったよ。少し 時間を おいて もう一度 ためしてね（状態：" + status + "）", resend: false };
 }
-function finishLogin(email, accessToken) {
+/* ================= per-account profile =================
+   Every account has its OWN profile. The nickname is resolved at
+   login in this order: (1) the account's saved row in the Supabase
+   profiles table, (2) the nickname stored in the account's signup
+   metadata, (3) a name derived from that account's own email
+   address. It is never a fixed name shared by everyone, and saving
+   the profile writes it back to that account's own row + metadata,
+   so the same person keeps their name on any device and different
+   people never collapse into one name. */
+function isValidShape(k) { return SHAPES.some(function (s) { return s.key === k; }); }
+function isValidColor(k) { return COLORS.some(function (c) { return c.key === k; }); }
+function nicknameFromEmail(email) {
+  var local = String(email || "").split("@")[0] || "";
+  local = local.replace(/[._\-+]+/g, " ").replace(/\s+/g, " ").trim();
+  if (local && hasBanned(local)) local = local.replace(/[0-9０-９]+/g, "").replace(/\s+/g, " ").trim();
+  if (!local || hasBanned(local)) local = "ともだち";
+  return local.slice(0, 12);
+}
+function applyAccountProfile(user, email) {
+  var meta = (user && user.user_metadata) || {};
+  var nick = String(meta.nickname || "").trim();
+  if (!nick || hasBanned(nick)) nick = nicknameFromEmail(email || (user && user.email) || "");
+  profile = {
+    nickname: nick.slice(0, 12) || "ニックネーム",
+    shape: isValidShape(meta.shape) ? meta.shape : "heart",
+    color: isValidColor(meta.color) ? meta.color : "sky"
+  };
+  currentUserId = (user && user.id) || "";
+}
+function saveRemoteProfile() {
+  if (!currentUserId || !authAccessToken || !supaBase()) return;
+  fetch(supaBase() + "/rest/v1/profiles?on_conflict=id", {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_PUBLISHABLE_KEY,
+      Authorization: "Bearer " + authAccessToken,
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates,return=minimal"
+    },
+    body: JSON.stringify({ id: currentUserId, nickname: profile.nickname, shape: profile.shape, color: profile.color })
+  }).catch(function () { /* offline: the metadata copy still holds the name */ });
+}
+function loadRemoteProfile() {
+  if (!currentUserId || !authAccessToken || !supaBase()) return;
+  fetch(supaBase() + "/rest/v1/profiles?id=eq." + encodeURIComponent(currentUserId) + "&select=nickname,shape,color", {
+    headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: "Bearer " + authAccessToken }
+  }).then(function (r) { return r.ok ? r.json() : null; }).then(function (rows) {
+    if (!loggedInEmail) return; /* logged out again meanwhile */
+    if (rows && rows.length && rows[0] && rows[0].nickname && !hasBanned(String(rows[0].nickname))) {
+      profile = {
+        nickname: String(rows[0].nickname).slice(0, 12),
+        shape: isValidShape(rows[0].shape) ? rows[0].shape : profile.shape,
+        color: isValidColor(rows[0].color) ? rows[0].color : profile.color
+      };
+      renderAll();
+    } else {
+      /* First login for this account: save its own profile row so
+         the name follows this account, not anyone else's. */
+      saveRemoteProfile();
+    }
+  }).catch(function () { /* keep the metadata/email-derived profile */ });
+}
+function finishLogin(email, accessToken, user) {
   loggedInEmail = email;
   authAccessToken = accessToken || "";
+  applyAccountProfile(user, email);
   updateAuthHeader();
   switchAuthMode("login");
   hideAuthView();
+  loadRemoteProfile();
 }
 function authSubmit() {
   if (authBusy) return;
@@ -2147,7 +2230,7 @@ function authSubmit() {
       var em = (res.data && res.data.email) || "";
       var tok = recoveryToken;
       recoveryToken = "";
-      if (em) finishLogin(em, tok);
+      if (em) finishLogin(em, tok, res.data);
       else { switchAuthMode("login"); setAuthNotice("パスワードを 変えたよ。下から ログインしてね"); }
     }).catch(function () {
       authBusy = false; renderAuth();
@@ -2157,19 +2240,29 @@ function authSubmit() {
   }
   var password = $("authPassword").value;
   if (authMode !== "forgot" && password.length < 8) { setAuthMsg("パスワードは 8もじ以上で 入れてね。"); return; }
+  /* Registration asks for this account's own nickname and stores it
+     in the account's signup metadata, so the name belongs to this
+     account from the very first login — nobody inherits a shared
+     default name. */
+  var signupNickname = "";
+  if (authMode === "register") {
+    signupNickname = $("authNickname").value.trim();
+    if (!signupNickname) { setAuthMsg("ニックネームを 入れてね。みんなに 見える あなたの 名前だよ（本名は 書かないでね）。"); return; }
+    if (hasBanned(signupNickname)) { setAuthMsg(BANNED_MSG); return; }
+  }
   authBusy = true; renderAuth();
   var chain;
-  if (authMode === "register") chain = supaAuthFetch("/auth/v1/signup", { email: email, password: password });
+  if (authMode === "register") chain = supaAuthFetch("/auth/v1/signup", { email: email, password: password, data: { nickname: signupNickname } });
   else if (authMode === "login") chain = supaAuthFetch("/auth/v1/token?grant_type=password", { email: email, password: password });
   else chain = supaAuthFetch("/auth/v1/recover", { email: email });
   chain.then(function (res) {
     authBusy = false;
     if (!res.ok) { var info = authErrorInfo(res); authCanResend = info.resend; renderAuth(); setAuthMsg(info.text); return; }
-    if (authMode === "login") { finishLogin(email, res.data && res.data.access_token); return; }
+    if (authMode === "login") { finishLogin(email, res.data && res.data.access_token, res.data && res.data.user); return; }
     if (authMode === "register") {
       // Confirmation email is off: signup returns a session and the
       // account is usable right away — log straight in.
-      if (res.data && res.data.access_token) { finishLogin(email, res.data.access_token); return; }
+      if (res.data && res.data.access_token) { finishLogin(email, res.data.access_token, res.data.user); return; }
       if (res.data && res.data.user && !res.data.session && res.data.user.identities && res.data.user.identities.length === 0) {
         renderAuth();
         setAuthMsg("その メールアドレスは もう登録されているよ。「ログインに もどる」から ログインしてね");
@@ -2229,16 +2322,28 @@ function handleAuthFragment() {
     return;
   }
   supaAuthFetch("/auth/v1/user", { __method: "GET" }, params.access_token).then(function (res) {
-    if (res.ok && res.data && res.data.email) finishLogin(res.data.email, params.access_token);
+    if (res.ok && res.data && res.data.email) finishLogin(res.data.email, params.access_token, res.data);
     else setAuthNotice("メールの確認が できたよ。下から ログインしてね");
   }).catch(function () { /* stay on the login form */ });
 }
 $("authBtn").addEventListener("click", function () {
   if (loggedInEmail) {
+    /* Logging out clears every per-account state, so the next person
+       who signs in on this device starts from their own account —
+       never from the previous person's name, posts or follows. */
     loggedInEmail = "";
     authAccessToken = "";
+    currentUserId = "";
+    profile = { nickname: "ニックネーム", shape: "heart", color: "sky" };
+    posts = [];
+    officialApps = [];
+    followingOfficial = {};
+    followingSafe = {};
+    postAs = 0;
+    missions.forEach(function (m) { m.done = false; });
     updateAuthHeader();
     switchAuthMode("login");
+    renderAll();
   }
   showAuthView();
 });
