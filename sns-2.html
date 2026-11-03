@@ -1,0 +1,2934 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>K</title>
+<style>
+/* X-style palette: white/black surfaces, light gray hairlines, X blue.
+   Same design tokens as the Muse version (theme.css). */
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-alt: #f7f9f9;
+  --bg-hover: #f7f9f9;
+  --text: #0f1419;
+  --dim: #536471;
+  --border: #eff3f4;
+  --accent: #1d9bf0;
+  --accent-strong: #1a8cd8;
+  --sun: #ffd35c;
+  --coral: #f91880;
+  --danger-bg: #ffe3e3;
+  --danger-ink: #b03030;
+  --ok-bg: #e6f9f0;
+  --ok-ink: #0a6b45;
+  --warn-bg: #fff3d6;
+  --warn-ink: #7a5200;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --surface: #000000;
+    --surface-alt: #16181c;
+    --bg-hover: #080808;
+    --text: #e7e9ea;
+    --dim: #71767b;
+    --border: #2f3336;
+    --accent: #1d9bf0;
+    --accent-strong: #8ecdf7;
+    --sun: #ffd35c;
+    --coral: #f91880;
+    --danger-bg: #3d2321;
+    --danger-ink: #ff9d94;
+    --ok-bg: #123527;
+    --ok-ink: #7fe0a8;
+    --warn-bg: #3a2f10;
+    --warn-ink: #ffd35c;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Noto Sans JP", sans-serif;
+  line-height: 1.5;
+}
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: none; padding: 0; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- shell: left nav / center feed / right sidebar ---------- */
+.shell { margin: 0 auto; display: flex; width: 100%; max-width: 1152px; align-items: flex-start; }
+.sidenav {
+  position: sticky; top: 0; height: 100vh; width: 64px; flex: none;
+  display: none; flex-direction: column; align-items: center; gap: 4px; padding: 16px 8px;
+}
+@media (min-width: 768px) { .sidenav { display: flex; } }
+@media (min-width: 1024px) { .sidenav { width: 240px; align-items: stretch; padding: 16px; } }
+.logo-mark {
+  margin-bottom: 16px; width: 44px; height: 44px; border-radius: 50%;
+  background: var(--text); color: var(--bg); font-size: 20px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+}
+@media (min-width: 1024px) { .logo-mark { margin-left: 8px; } }
+.nav-btn {
+  display: flex; align-items: center; gap: 12px; border-radius: 999px;
+  padding: 12px; font-size: 18px; text-align: left; width: 100%;
+}
+.nav-btn:hover { background: var(--bg-hover); }
+.nav-btn.active { font-weight: 900; }
+.nav-btn .nav-label { display: none; }
+@media (min-width: 1024px) { .nav-btn .nav-label { display: inline; } }
+.nav-btn svg { flex: none; }
+.nav-post {
+  margin-top: 16px; border-radius: 999px; background: var(--accent); color: #fff;
+  padding: 12px; font-size: 18px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,.18);
+  width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+}
+.nav-post:hover { opacity: .9; }
+.nav-post .nav-label { display: none; }
+@media (min-width: 1024px) {
+  .nav-post { width: auto; height: auto; padding: 12px 24px; }
+  .nav-post .nav-label { display: inline; }
+  .nav-post .nav-plus { display: none; }
+}
+.nav-profile { margin-top: auto; display: flex; align-items: center; gap: 12px; border-radius: 999px; padding: 12px; text-align: left; width: 100%; }
+.nav-profile:hover { background: var(--bg-hover); }
+.nav-profile .np-text { display: none; min-width: 0; }
+@media (min-width: 1024px) { .nav-profile .np-text { display: block; } }
+.np-text b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.np-text span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; color: var(--dim); }
+
+.feed-col { flex: 1; min-width: 0; width: 100%; max-width: 576px; min-height: 100vh; padding-bottom: 96px; }
+@media (min-width: 768px) { .feed-col { border-left: 1px solid var(--border); border-right: 1px solid var(--border); padding-bottom: 40px; } }
+
+.sidebar { width: 320px; flex: none; position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 16px; display: none; }
+@media (min-width: 1024px) { .sidebar { display: block; } }
+.sidebar > * + * { margin-top: 16px; }
+
+/* ---------- profile header ---------- */
+.banner { height: 96px; background: var(--accent); }
+.profile-head { border-bottom: 1px solid var(--border); padding: 0 16px 12px; }
+.profile-top { margin-top: -36px; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+.avatar-ring { border-radius: 50%; border: 4px solid var(--bg); line-height: 0; }
+.head-btns { display: flex; gap: 8px; flex: none; flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 480px) {
+  .profile-top { flex-wrap: wrap; }
+  .head-btns { margin-left: auto; }
+}
+.btn-outline {
+  border: 1px solid var(--border); border-radius: 999px; padding: 6px 16px;
+  font-size: 14px; font-weight: 700; background: var(--surface); min-height: 36px;
+}
+.btn-outline.dim { color: var(--dim); }
+.profile-name { margin-top: 4px; font-size: 20px; font-weight: 900; }
+.profile-sub { font-size: 14px; color: var(--dim); overflow-wrap: anywhere; }
+.profile-note { margin-top: 2px; font-size: 12px; color: var(--dim); overflow-wrap: anywhere; }
+.profile-stats { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 14px; color: var(--dim); }
+.profile-stats strong { color: var(--text); }
+
+/* ---------- sticky tab header + timer ---------- */
+.sticky-head { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--border); background: var(--bg); }
+@supports (backdrop-filter: blur(8px)) { .sticky-head { background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(8px); } }
+.tabs { display: flex; }
+.tab-btn { position: relative; flex: 1; padding: 14px 2px; font-size: 15px; font-weight: 700; }
+.tab-btn:hover { background: var(--bg-hover); }
+.tab-btn span { color: var(--dim); }
+.tab-btn.active span { font-weight: 900; color: var(--text); }
+.tab-btn.active::after { content: ""; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 4px; width: 56px; border-radius: 999px; background: var(--accent); }
+.timer-row { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding: 6px 16px; }
+.timer-row .t-label { flex: none; font-size: 12px; font-weight: 700; }
+.timer-track { height: 6px; flex: 1; overflow: hidden; border-radius: 999px; background: var(--border); }
+.timer-fill { height: 100%; border-radius: 999px; background: var(--accent); transition: width 1s linear; }
+.timer-fill.low { background: #e2543e; }
+.timer-row .t-note { flex: none; font-size: 11px; color: var(--dim); display: none; }
+@media (min-width: 640px) { .timer-row .t-note { display: inline; } }
+
+/* ---------- avatar (shape mark) ---------- */
+.avatar { display: flex; flex: none; align-items: center; justify-content: center; border-radius: 50%; }
+
+/* ---------- composer ---------- */
+.composer { position: relative; border-bottom: 1px solid var(--border); padding: 12px 16px; }
+.composer-row { display: flex; gap: 12px; }
+.composer-main { flex: 1; min-width: 0; }
+.composer textarea {
+  width: 100%; resize: none; border: none; background: transparent; padding-top: 8px;
+  font-size: 20px; outline: none; line-height: 1.4;
+}
+.composer textarea::placeholder { color: var(--dim); }
+.moods { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.mood-chip { border-radius: 999px; padding: 4px 12px; font-size: 14px; font-weight: 700; color: #fff; opacity: .5; min-height: 32px; }
+.mood-chip[aria-pressed="true"] { opacity: 1; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text); }
+.photo-row { margin-top: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.btn-photo { border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 700; color: var(--accent); background: var(--surface); min-height: 36px; }
+.photo-hint { font-size: 12px; color: var(--dim); }
+.photo-preview { position: relative; margin-top: 8px; display: none; }
+.photo-preview img { max-height: 224px; width: 100%; border-radius: 16px; border: 1px solid var(--border); object-fit: cover; display: block; }
+.photo-cancel { position: absolute; right: 8px; top: 8px; border-radius: 999px; background: rgba(0,0,0,.7); color: #fff; padding: 4px 12px; font-size: 14px; font-weight: 700; }
+.composer-note { margin-top: 8px; font-size: 12px; line-height: 1.6; color: var(--dim); }
+.composer-foot { margin-top: 8px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border); padding-top: 10px; }
+.char-count { font-size: 14px; color: var(--dim); }
+.btn-post { border-radius: 999px; background: var(--accent); color: #fff; padding: 6px 20px; font-weight: 700; min-height: 36px; }
+.btn-post:disabled { opacity: .4; cursor: default; }
+.msg { margin-top: 8px; border-radius: 8px; padding: 8px 12px; font-size: 14px; font-weight: 700; display: none; }
+.msg.err { background: var(--danger-bg); color: var(--danger-ink); display: block; }
+.msg.ok { background: var(--ok-bg); color: var(--ok-ink); display: block; }
+.postas { margin-bottom: 12px; display: none; flex-wrap: wrap; align-items: center; gap: 6px; }
+.postas.show { display: flex; }
+.postas .pa-label { font-size: 12px; font-weight: 700; color: var(--dim); }
+.postas-btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px; font-size: 14px; font-weight: 700; background: var(--surface); }
+.postas-btn[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff; }
+.chip-official { border-radius: 999px; padding: 2px 6px; font-size: 10px; font-weight: 700; background: var(--accent); color: #fff; }
+.postas-btn[aria-pressed="true"] .chip-official { background: #fff; color: var(--accent); }
+.templates { margin-top: 8px; display: none; flex-wrap: wrap; align-items: center; gap: 6px; }
+.templates.show { display: flex; }
+.templates .pa-label { font-size: 12px; font-weight: 700; color: var(--dim); }
+.tpl-btn { border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 700; background: var(--surface); min-height: 32px; }
+
+/* ---------- timeline filter ---------- */
+.tl-filter { display: flex; gap: 8px; border-bottom: 1px solid var(--border); padding: 10px 16px; }
+.tl-btn { border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 700; color: var(--dim); background: var(--bg); min-height: 36px; }
+.tl-btn[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+.tl-btn.blue[aria-pressed="true"] { background: var(--accent); color: #fff; }
+
+/* ---------- post card ---------- */
+.post { position: relative; border-bottom: 1px solid var(--border); padding: 12px 16px; }
+.post-row { display: flex; gap: 12px; }
+.post-main { flex: 1; min-width: 0; }
+.post-head { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.post-author { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.post-handle { font-size: 14px; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip-verified { flex: none; border-radius: 999px; background: var(--accent); padding: 2px 8px; font-size: 11px; font-weight: 700; color: #fff; }
+.chip-public { flex: none; border-radius: 999px; background: #00ba7c; padding: 2px 8px; font-size: 11px; font-weight: 700; color: #fff; }
+.chip-mood { flex: none; margin-left: 4px; border-radius: 999px; padding: 2px 8px; font-size: 12px; font-weight: 700; color: #fff; }
+.post-menu-wrap { position: relative; margin-left: auto; flex: none; }
+.menu-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: var(--dim); }
+.menu-btn:hover { background: var(--bg-hover); }
+.post-menu { position: absolute; right: 0; top: 36px; z-index: 10; width: 176px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); padding: 4px 0; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+.post-menu p { padding: 8px 12px; font-size: 14px; font-weight: 700; margin: 0; }
+.post-menu button { display: block; width: 100%; padding: 8px 12px; text-align: left; font-weight: 700; font-size: 15px; }
+.post-menu button.danger { color: #d33; }
+.post-menu button.dim { color: var(--dim); }
+.post-shopmeta { margin-bottom: 4px; display: flex; flex-wrap: wrap; gap: 2px 8px; font-size: 12px; font-weight: 700; color: var(--dim); }
+.post-shopmeta .cat { border-radius: 999px; background: var(--bg-hover); padding: 2px 8px; }
+.post-body { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 15px; line-height: 1.6; margin: 0; }
+.post img.photo { margin-top: 8px; max-height: 384px; width: 100%; border-radius: 16px; border: 1px solid var(--border); object-fit: cover; display: block; }
+.buzz { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
+.buzz-track { height: 8px; flex: 1; overflow: hidden; border-radius: 999px; background: var(--border); }
+.buzz-fill { height: 100%; border-radius: 999px; background: var(--sun); transition: width .5s; }
+.buzz-fill.hot { background: var(--coral); }
+.buzz-label { flex: none; font-size: 12px; font-weight: 700; color: var(--dim); }
+.buzz-label.hot { color: #e2543e; }
+.post-counts { margin-top: 4px; font-size: 12px; color: var(--dim); overflow-wrap: anywhere; }
+.follow-slot { margin-bottom: 6px; }
+.btn-follow { flex: none; border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 700; background: var(--text); color: var(--bg); min-height: 32px; }
+.btn-follow.following { background: var(--surface); border: 1px solid var(--border); color: var(--dim); }
+
+/* AI replies */
+.ai-replies { margin-top: 12px; display: grid; gap: 8px; }
+.ai-reply { display: flex; gap: 8px; border-radius: 12px; background: var(--surface-alt); padding: 10px 12px; }
+.ai-avatar { width: 32px; height: 32px; flex: none; border-radius: 50%; background: var(--sun); display: flex; align-items: center; justify-content: center; }
+.ai-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 14px; }
+.ai-head b { font-weight: 700; }
+.chip-ai { border-radius: 999px; background: var(--sun); padding: 2px 8px; font-size: 11px; font-weight: 700; color: #5c4300; }
+.ai-team { font-size: 12px; color: var(--dim); }
+.ai-body { margin-top: 2px; font-size: 14px; font-weight: 700; line-height: 1.6; overflow-wrap: anywhere; }
+.ai-foot { margin-top: 2px; font-size: 12px; color: var(--dim); }
+.ai-wait { margin-top: 12px; font-size: 12px; font-weight: 700; color: var(--dim); }
+.btn-more-ai { margin-top: 12px; border-radius: 999px; background: var(--sun); color: #5c4300; padding: 6px 14px; font-size: 14px; font-weight: 700; min-height: 36px; }
+
+/* comments (ひとこと) */
+.phrase-list { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.phrase-list li { display: flex; align-items: center; gap: 8px; }
+.phrase-bubble { border-radius: 999px; background: var(--surface-alt); padding: 2px 12px; font-size: 14px; font-weight: 700; }
+.phrase-who { font-size: 12px; color: var(--dim); }
+
+/* action bar */
+.actions { margin-top: 8px; margin-left: -8px; display: flex; max-width: 448px; align-items: center; justify-content: space-between; }
+.act-btn { display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; padding: 6px 8px; font-size: 14px; color: var(--dim); min-height: 36px; }
+.act-btn b { font-weight: 700; }
+.act-btn:hover { color: var(--accent); }
+.picker { margin-top: 8px; border-radius: 12px; background: var(--bg-hover); padding: 12px; }
+.picker p { margin: 0; padding: 0 4px; font-size: 14px; font-weight: 700; color: var(--dim); }
+.picker .phrases { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px; }
+.phrase-btn { border-radius: 999px; background: var(--surface); padding: 6px 14px; font-size: 14px; font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,.12); min-height: 36px; }
+.picker .close-link { margin-top: 8px; padding: 4px 8px; font-size: 14px; font-weight: 700; color: var(--dim); }
+.empty-note { padding: 40px 24px; text-align: center; }
+.empty-note .big { font-size: 20px; font-weight: 900; }
+.empty-note p { color: var(--dim); }
+
+/* ---------- section intro blocks (safe / discover) ---------- */
+.intro-block { border-bottom: 1px solid var(--border); background: var(--surface-alt); padding: 12px 16px; }
+.intro-block .ib-title { font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.intro-block p { margin: 4px 0 0; font-size: 14px; line-height: 1.6; color: var(--dim); }
+.search-block { border-bottom: 1px solid var(--border); padding: 12px 16px; }
+.search-input { width: 100%; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); padding: 10px 16px; outline: none; min-height: 44px; }
+.search-input:focus { border-color: var(--accent); }
+.chip-row { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+.cat-chip { border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 700; color: var(--dim); background: var(--bg); min-height: 36px; }
+.cat-chip[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+.cat-chip.blue[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.safe-check { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #00ba7c; }
+.safe-check .normal { font-weight: 400; color: var(--dim); }
+
+/* ---------- discover ---------- */
+.photo-grid { margin-top: 12px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+@media (min-width: 640px) { .photo-grid { grid-template-columns: repeat(3, 1fr); } }
+.photo-grid figure { margin: 0; overflow: hidden; border-radius: 12px; border: 1px solid var(--border); }
+.photo-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+.photo-grid figcaption { padding: 6px 8px; font-size: 12px; font-weight: 700; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.block-pad { border-bottom: 1px solid var(--border); padding: 16px; }
+.block-pad h3 { margin: 0; font-size: 16px; }
+.block-pad .sub { margin-top: 8px; font-size: 14px; line-height: 1.6; color: var(--dim); }
+.quiz { border-bottom: 1px solid var(--border); padding: 16px; }
+.quiz-q { display: flex; align-items: center; gap: 8px; font-weight: 700; margin: 0; }
+.chip-quiz { flex: none; border-radius: 999px; background: var(--sun); padding: 2px 10px; font-size: 12px; font-weight: 700; color: #5c4300; }
+.quiz-choices { margin-top: 12px; display: grid; gap: 8px; }
+.quiz-choice { display: block; width: 100%; border-radius: 12px; padding: 10px 16px; text-align: left; font-size: 14px; font-weight: 700; background: var(--bg-hover); min-height: 44px; }
+.quiz-choice.right { background: var(--ok-bg); color: var(--ok-ink); }
+.quiz-choice.wrong { background: var(--danger-bg); color: var(--danger-ink); }
+.quiz-choice.faded { opacity: .6; }
+.quiz-explain { margin-top: 8px; font-size: 14px; line-height: 1.6; color: var(--dim); }
+
+/* ---------- cards (sidebar / missions / profile) ---------- */
+.card { border: 1px solid var(--border); border-radius: 16px; background: var(--surface); padding: 16px; }
+.card + .card { margin-top: 16px; }
+.card h2 { margin: 0; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.card .card-sub { margin-top: 4px; font-size: 14px; line-height: 1.6; color: var(--dim); }
+.view-stack { padding: 16px; }
+.view-stack > * + * { margin-top: 16px; }
+.stats-grid { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stat-cell { border-radius: 12px; background: var(--bg-hover); padding: 10px 12px; }
+.stat-cell dd { margin: 0; font-size: 24px; font-weight: 900; }
+.stat-cell dt { font-size: 12px; font-weight: 700; color: var(--dim); }
+.mission-list { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.mission-btn { display: flex; width: 100%; align-items: center; gap: 12px; border-radius: 12px; padding: 10px 14px; text-align: left; font-size: 14px; font-weight: 700; background: var(--bg-hover); min-height: 48px; }
+.mission-btn.done { background: var(--sun); color: #5c4300; }
+.mission-btn.done .m-topic { text-decoration: line-through; opacity: .7; }
+.mission-check { flex: none; width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--dim); background: var(--surface); display: flex; align-items: center; justify-content: center; }
+.mission-btn.done .mission-check { border-color: #5c4300; background: rgba(255,255,255,.6); }
+.mission-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mission-count { border-radius: 999px; background: var(--bg-hover); padding: 4px 12px; font-size: 14px; font-weight: 700; color: var(--dim); }
+.all-done { margin-top: 12px; border-radius: 12px; background: var(--surface-alt); padding: 12px 16px; text-align: center; font-weight: 700; }
+.rules { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; line-height: 1.6; color: var(--dim); }
+.warn-box { margin-top: 8px; border-radius: 8px; background: var(--warn-bg); color: var(--warn-ink); padding: 8px 12px; font-size: 14px; font-weight: 700; line-height: 1.6; }
+.notice-ok { margin-top: 8px; border-radius: 8px; background: var(--ok-bg); color: var(--ok-ink); padding: 8px 12px; font-size: 14px; font-weight: 700; line-height: 1.6; display: none; }
+.notice-ok.show { display: block; }
+
+/* ---------- forms (profile / official) ---------- */
+.field-input { width: 100%; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); padding: 10px 12px; outline: none; min-height: 48px; }
+.field-input:focus { border-color: var(--accent); }
+.field-input.bold { font-weight: 700; }
+.form-label { font-size: 14px; font-weight: 700; color: var(--dim); }
+.picker-row { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px; }
+.shape-pick { width: 56px; height: 56px; border-radius: 50%; background: var(--bg-hover); display: flex; align-items: center; justify-content: center; }
+.shape-pick[aria-pressed="true"] { background: var(--accent); box-shadow: 0 0 0 4px var(--sun); }
+.shape-pick.sm { width: 44px; height: 44px; }
+.color-pick { width: 48px; height: 48px; border-radius: 50%; }
+.color-pick.sm { width: 40px; height: 40px; }
+.color-pick[aria-pressed="true"] { box-shadow: 0 0 0 4px var(--bg), 0 0 0 6px var(--text); }
+.btn-submit { margin-top: 24px; width: 100%; border-radius: 999px; background: var(--accent); padding: 14px; font-size: 18px; font-weight: 700; color: #fff; min-height: 52px; }
+.btn-submit:disabled { opacity: .4; }
+.form-foot { margin-top: 12px; text-align: center; font-size: 14px; color: var(--dim); }
+.chip-pick { border-radius: 999px; padding: 6px 12px; font-size: 14px; font-weight: 700; background: var(--bg-hover); color: var(--dim); min-height: 36px; }
+.chip-pick[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.off-list { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.off-item { display: flex; align-items: center; gap: 12px; border-radius: 12px; background: var(--bg-hover); padding: 10px 12px; }
+.off-item .oi-main { flex: 1; min-width: 0; }
+.off-item .oi-name { display: flex; align-items: center; gap: 4px; font-weight: 700; }
+.off-item .oi-name .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.off-item .oi-sub { font-size: 14px; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.off-item .oi-note { font-size: 12px; font-weight: 700; }
+.chip-status { flex: none; border-radius: 999px; padding: 2px 8px; font-size: 10px; font-weight: 700; }
+.chip-status.pending { background: var(--sun); color: #5c4300; }
+.chip-status.approved { background: #00ba7c; color: #fff; }
+.btn-del { flex: none; border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px; font-size: 14px; font-weight: 700; color: var(--dim); background: var(--surface); min-height: 36px; }
+.btn-del.confirm { background: #d33; border-color: #d33; color: #fff; }
+.review-box { margin-top: 16px; border: 2px solid var(--accent); border-radius: 12px; padding: 12px; }
+.review-box h3 { margin: 0; font-size: 16px; font-weight: 900; }
+.btn-approve { flex: none; border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 700; color: #fff; background: #00ba7c; min-height: 36px; }
+.btn-reject { flex: none; border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px; font-size: 14px; font-weight: 700; color: var(--dim); background: var(--surface); min-height: 36px; }
+.off-form { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 16px; }
+.off-form .stack { display: grid; gap: 8px; }
+.steps { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; font-size: 14px; line-height: 1.6; }
+.steps li { display: flex; gap: 10px; }
+.steps .num { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 14px; margin-top: 1px; }
+.steps p { margin: 0; }
+.profile-view { margin: 0 auto; width: 100%; max-width: 576px; padding: 24px 16px 40px; }
+.btn-back { margin-top: 16px; width: 100%; padding: 8px; font-weight: 700; color: var(--dim); min-height: 44px; }
+
+/* ---------- mobile bottom nav + FAB ---------- */
+.bottomnav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex;
+  border-top: 1px solid var(--border); background: var(--bg);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@supports (backdrop-filter: blur(8px)) { .bottomnav { background: color-mix(in srgb, var(--bg) 95%, transparent); backdrop-filter: blur(8px); } }
+@media (min-width: 768px) { .bottomnav { display: none; } }
+.bn-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0; font-size: 11px; color: var(--dim); min-height: 52px; }
+.bn-btn.active { font-weight: 900; color: var(--text); }
+.fab {
+  position: fixed; bottom: 80px; right: 16px; z-index: 30; width: 56px; height: 56px;
+  border-radius: 50%; background: var(--accent); color: #fff; font-size: 30px; font-weight: 300;
+  display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 18px rgba(0,0,0,.3);
+}
+@media (min-width: 768px) { .fab { display: none; } }
+
+/* ---------- auth view (same as Muse version) ---------- */
+.auth-view { margin: 0 auto; width: 100%; max-width: 448px; padding: 32px 16px 40px; }
+.auth-card { border: 1px solid var(--border); border-radius: 16px; background: var(--surface); padding: 20px; }
+.auth-logo { margin: 0 auto; width: 64px; height: 64px; border-radius: 50%; background: var(--text); color: var(--bg); font-size: 24px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+.auth-title { margin: 12px 0 0; text-align: center; font-size: 24px; font-weight: 900; }
+.auth-desc { margin: 8px 0 0; text-align: center; font-size: 14px; line-height: 1.6; color: var(--dim); }
+.auth-note-warn { margin: 8px 0 0; border-radius: 8px; background: var(--warn-bg); color: var(--warn-ink); padding: 8px 12px; text-align: center; font-size: 14px; font-weight: 700; line-height: 1.6; }
+.auth-note-bold { margin: 8px 0 0; text-align: center; font-size: 14px; font-weight: 700; line-height: 1.6; color: var(--dim); }
+.auth-note-sm { margin: 8px 0 0; text-align: center; font-size: 12px; line-height: 1.6; color: var(--dim); }
+.auth-note-box { margin: 8px 0 0; border-radius: 8px; background: var(--surface-alt); padding: 8px 12px; text-align: center; font-size: 12px; line-height: 1.6; color: var(--dim); }
+.auth-form { margin-top: 20px; display: grid; gap: 16px; }
+.auth-code-input { text-align: center; font-size: 24px; font-weight: 900; letter-spacing: .3em; }
+.link-btn { font-weight: 700; color: var(--accent); min-height: 36px; padding: 4px 8px; }
+.auth-switch { margin-top: 24px; border-top: 1px solid var(--border); padding-top: 16px; text-align: center; display: grid; gap: 4px; justify-items: center; }
+.auth-btn-row { display: flex; gap: 8px; }
+.auth-btn-row .btn-outline { flex: 1; min-height: 44px; }
+
+/* ---------- supabase settings card ---------- */
+.key-answer { margin-top: 12px; border-radius: 12px; background: var(--ok-bg); color: var(--ok-ink); padding: 12px 14px; line-height: 1.6; font-size: 14px; }
+.key-answer .ka-big { margin: 0; font-size: 18px; font-weight: 900; }
+.key-answer p { margin: 6px 0 0; }
+.key-answer code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+.key-warn { margin-top: 8px; border-radius: 12px; background: var(--danger-bg); color: var(--danger-ink); padding: 12px 14px; line-height: 1.6; font-size: 14px; font-weight: 700; }
+.key-warn code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+.config-code { display: block; margin-top: 8px; border-radius: 12px; background: var(--surface-alt); padding: 12px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+.status-line { margin-top: 8px; font-size: 14px; font-weight: 700; }
+.status-line span { color: var(--dim); font-weight: 400; overflow-wrap: anywhere; }
+.chip-status.rejected { background: #d33; color: #fff; }
+
+/* ---------- break overlay ---------- */
+.overlay { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; background: var(--bg); padding: 0 24px; }
+.overlay.show { display: flex; }
+.overlay .box { width: 100%; max-width: 384px; text-align: center; }
+.overlay .moon { margin: 0 auto; width: 96px; height: 96px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.overlay .big { margin-top: 20px; font-size: 24px; font-weight: 900; }
+.overlay .txt { margin-top: 8px; line-height: 1.6; color: var(--dim); }
+.overlay .count-label { margin-top: 20px; font-size: 14px; font-weight: 700; color: var(--dim); }
+.overlay .count { font-size: 48px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.overlay .btn-again { margin-top: 24px; width: 100%; border-radius: 999px; background: var(--accent); padding: 14px; font-size: 18px; font-weight: 700; color: #fff; }
+
+/* ---------- confetti ---------- */
+@keyframes confetti-fall { 0% { transform: translateY(-12px) rotate(0deg); opacity: 1; } 100% { transform: translateY(190px) rotate(560deg); opacity: 0; } }
+.confetti-piece { position: absolute; top: 0; pointer-events: none; animation: confetti-fall 2.2s ease-in forwards; }
+.confetti-wrap { pointer-events: none; position: absolute; inset: 0; overflow: hidden; }
+@media (prefers-reduced-motion: reduce) { .confetti-piece { display: none; } .buzz-fill, .timer-fill { transition: none; } }
+/* official account replies (free-text, banned-word checked) */
+.reply-section { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px; }
+.reply-section .rs-title { margin: 0; font-size: 14px; font-weight: 900; }
+.reply-section .rs-note { margin: 2px 0 0; font-size: 12px; line-height: 1.6; color: var(--dim); }
+.reply-list { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.reply-item { display: flex; gap: 8px; border-radius: 12px; background: var(--surface-alt); padding: 8px 10px; }
+.reply-item .r-head { font-size: 13px; font-weight: 700; }
+.reply-item .r-head span { font-weight: 400; color: var(--dim); font-size: 12px; }
+.reply-item .r-body { margin: 1px 0 0; font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; white-space: pre-wrap; }
+.reply-form { margin-top: 10px; display: flex; gap: 8px; align-items: flex-start; }
+.reply-input { flex: 1; min-width: 0; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); padding: 9px 12px; outline: none; min-height: 40px; resize: vertical; }
+.reply-input:focus { border-color: var(--accent); }
+.btn-reply { flex: none; border-radius: 999px; background: var(--accent); color: #fff; padding: 8px 16px; font-weight: 700; min-height: 40px; }
+.chip-admin { flex: none; border-radius: 999px; background: var(--text); color: var(--bg); padding: 2px 8px; font-size: 11px; font-weight: 700; }
+.hidden { display: none !important; }
+/* Keep tappable rows clear of the fixed mobile bottom nav when scrolled to. */
+.post, .card, .btn-follow, .mission-btn { scroll-margin-bottom: 92px; }
+</style>
+</head>
+<body>
+
+<!-- ================= main shell (hidden until login) ================= -->
+<div id="shellView" class="hidden">
+  <div class="shell">
+    <!-- Left nav (tablet/desktop, X-style) -->
+    <nav class="sidenav" aria-label="メニュー">
+      <div class="logo-mark" aria-hidden="true">K</div>
+      <div id="sideNavBtns"></div>
+      <button type="button" class="nav-post" id="sidePostBtn" aria-label="ポストする"><span class="nav-label">ポストする</span><span class="nav-plus" aria-hidden="true">+</span></button>
+      <button type="button" class="nav-profile" id="sideProfileBtn" aria-label="プロフィールを かえる">
+        <span class="avatar-slot" data-avatar="me" data-size="40"></span>
+        <span class="np-text"><b class="my-name">ニックネーム</b><span class="my-handle">@ニックネーム</span></span>
+      </button>
+    </nav>
+
+    <!-- Center feed -->
+    <main class="feed-col">
+      <!-- Profile header (X-style) -->
+      <div class="banner" aria-hidden="true"></div>
+      <div class="profile-head">
+        <div class="profile-top">
+          <div class="avatar-ring"><span class="avatar-slot" data-avatar="me" data-size="72"></span></div>
+          <div class="head-btns">
+            <button type="button" class="btn-outline" id="editProfileBtn">プロフィールを編集</button>
+            <button type="button" class="btn-outline dim" id="authBtn">ログイン</button>
+          </div>
+        </div>
+        <div class="profile-name my-name">ニックネーム</div>
+        <div class="profile-sub"><span class="my-handle">@ニックネーム</span> · K（子供も大人も使える あんしんSNS）</div>
+        <div class="profile-note hidden" id="adminLine" style="font-weight:700;color:var(--accent)">管理者アカウントで ログイン中だよ（管理者は youzhenshengu54@gmail.com に固定）</div>
+        <div class="profile-note hidden" id="authEmailLine"></div>
+        <div class="profile-stats" id="profileStats"></div>
+      </div>
+
+      <!-- Sticky tab header -->
+      <div class="sticky-head">
+        <div class="tabs" role="tablist" aria-label="画面の切りかえ" id="tabBar"></div>
+        <div class="timer-row">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:none;color:var(--dim)" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <span class="t-label">つかえる じかん あと <span id="timerText">10:00</span></span>
+          <div class="timer-track" role="progressbar" aria-label="つかえる じかん" aria-valuemin="0" aria-valuemax="600" aria-valuenow="600" id="timerBar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
+          <span class="t-note">10分 たったら おやすみタイム</span>
+        </div>
+      </div>
+
+      <!-- HOME -->
+      <div id="view-home">
+        <section class="composer" aria-label="あたらしい ポスト">
+          <div id="composerConfetti"></div>
+          <p class="warn-box hidden" id="pendingWarn" style="margin:0 0 12px">審査中の公式アカウントがあるよ。公式アカウントのカードの「審査」で認証するまで、そのアカウントではポストできないよ。</p>
+          <div class="postas" id="postAsRow"></div>
+          <div class="composer-row">
+            <span class="avatar-slot" data-avatar="composer" data-size="40"></span>
+            <div class="composer-main">
+              <label class="sr-only" for="composerText">ポストの ないよう</label>
+              <textarea id="composerText" aria-label="ポストの ないよう" maxlength="140" rows="3" placeholder="いま どうしてる？"></textarea>
+              <div class="moods" role="group" aria-label="きもちをえらぶ" id="moodRow"></div>
+              <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp,image/gif" aria-label="写真をえらぶ" class="hidden" />
+              <div class="photo-row">
+                <button type="button" class="btn-photo" id="photoBtn">写真をつける</button>
+                <span class="photo-hint">写真は1まいまで つけられるよ</span>
+              </div>
+              <div class="photo-preview" id="photoPreview">
+                <img id="photoImg" alt="投稿する写真のプレビュー" />
+                <button type="button" class="photo-cancel" id="photoCancel">やめる</button>
+              </div>
+              <div class="templates" id="templatesRow"></div>
+              <p class="composer-note">ポストすると、AIファンが内容を読んで自動で返信してくれるよ。AIの返信は漢字を使ってもよく、大人向けの言い方でも大丈夫だよ。でもAIの返信にも禁止ワードチェックが必ずかかって、禁止ワード（侮辱的な言葉を含む）を含む返信は出さずに書き直すか破棄するよ。公式アカウントのポストには文章で返信コメントもできるよ（返信にも同じチェックがかかって、侮辱的な言葉は送れないよ）。写真は、人の顔や おうち・住所が分かるものは のせないでね。</p>
+              <div class="msg" id="postMsg" role="alert"></div>
+              <div class="composer-foot">
+                <span class="char-count" id="charCount">0 / 140</span>
+                <button type="button" class="btn-post" id="postBtn" disabled>ポストする</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section aria-label="タイムライン">
+          <div class="tl-filter" role="group" aria-label="タイムラインの しぼりこみ">
+            <button type="button" class="tl-btn" id="tlAll" aria-label="すべてのポストを見る" aria-pressed="true">すべて</button>
+            <button type="button" class="tl-btn blue" id="tlFollowing" aria-label="フォロー中のアカウントのポストだけ見る" aria-pressed="false">フォロー中だけ</button>
+          </div>
+          <div id="timeline"></div>
+        </section>
+      </div>
+
+      <!-- DISCOVER -->
+      <div id="view-discover" class="hidden"></div>
+
+      <!-- SAFE -->
+      <div id="view-safe" class="hidden"></div>
+
+      <!-- MISSIONS -->
+      <div id="view-missions" class="hidden">
+        <div class="view-stack">
+          <div data-stats-slot></div>
+          <div data-official-slot></div>
+          <div data-supabase-slot></div>
+          <div data-missions-slot></div>
+          <div data-rules-slot></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Right sidebar (desktop, X-style) -->
+    <aside class="sidebar">
+      <div data-stats-slot></div>
+      <div data-missions-slot></div>
+      <div data-rules-slot></div>
+    </aside>
+  </div>
+
+  <!-- Mobile bottom nav + FAB -->
+  <nav class="bottomnav" aria-label="メニュー（下）" id="bottomNav"></nav>
+  <button type="button" class="fab" id="fabBtn" aria-label="ポストする">+</button>
+</div>
+
+<!-- ================= profile edit view ================= -->
+<div id="profileView" class="hidden">
+  <main class="profile-view">
+    <div data-profileform-slot></div>
+    <button type="button" class="btn-back" id="profileBackBtn">もどる</button>
+    <div style="margin-top:8px">
+      <div data-official-slot></div>
+    </div>
+    <div style="margin-top:16px">
+      <div data-supabase-slot></div>
+    </div>
+  </main>
+</div>
+
+<!-- ================= auth view (login / register / forgot) — always the first page ================= -->
+<div id="authView">
+  <main class="auth-view">
+    <div class="auth-card">
+      <div class="auth-logo" aria-hidden="true">K</div>
+      <h1 class="auth-title" id="authTitle">ログイン</h1>
+      <p class="auth-desc" id="authDesc">登録した メールアドレスと パスワードを 入れると ログインできるよ。</p>
+      <p class="auth-note-warn hidden" id="authForgotNote">パスワードは 安全のために、元の文字が 分からない形（ハッシュ）で 保存してあるよ。だから 元のパスワードを 教えたり 見せたりは できないんだ。代わりに、メールで 本人だと 確かめてから、新しい パスワードに 変える形になるよ。</p>
+      <p class="auth-note-bold">メールアドレスごとに プロフィールと ポストは 別々だよ。別のメアドで入ると、そのメアドの プロフィールと ポストだけが 見えるよ。</p>
+      <p class="auth-note-sm">アカウントを削除すると、そのアカウントのプロフィールとポストも一緒に消えて、元に戻せません。管理者は youzhenshengu54@gmail.com に固定されていて、ほかのアカウントに移ることはありません。</p>
+      <p class="auth-note-sm">このSNSの名前は「K」です。管理者メールアドレス：youzhenshengu54@gmail.com（固定）</p>
+      <p class="auth-note-box">子供も大人も使えるSNSだよ。子供が使うときは、おうちの人と一緒にやってね。パスワードはこのSNSだけのものを決めて、ほかの人に教えないでね。</p>
+
+      <form class="auth-form" id="authFormStage" novalidate>
+        <div class="notice-ok" id="authNotice" role="status"></div>
+        <div id="authEmailWrap">
+          <label class="form-label" for="authEmail">メールアドレス</label>
+          <input id="authEmail" class="field-input" type="email" autocomplete="email" placeholder="れい：you@example.com" style="margin-top:4px" />
+        </div>
+        <div id="authNicknameWrap" class="hidden">
+          <label class="form-label" for="authNickname">ニックネーム（みんなに 見える 名前・12もじまで）</label>
+          <input id="authNickname" class="field-input" maxlength="12" autocomplete="nickname" placeholder="れい：ゆうちゃん" style="margin-top:4px" />
+          <p class="auth-note-sm" style="text-align:left">この名前は あなたのアカウント専用だよ。ほかの人の名前には ならないよ。本名は 書かないでね。</p>
+        </div>
+        <div id="authPasswordWrap">
+          <label class="form-label" for="authPassword">パスワード（8もじ以上）</label>
+          <input id="authPassword" class="field-input" type="password" autocomplete="current-password" style="margin-top:4px" />
+          <button type="button" class="link-btn hidden" id="authForgotLink">パスワードを 忘れた人は こちら</button>
+        </div>
+        <div id="authNewPwWrap" class="hidden" style="display:grid;gap:16px">
+          <div>
+            <label class="form-label" for="authNewPassword">新しい パスワード（8もじ以上）</label>
+            <input id="authNewPassword" class="field-input" type="password" autocomplete="new-password" style="margin-top:4px" />
+          </div>
+          <div>
+            <label class="form-label" for="authNewPassword2">新しい パスワード（もう一度）</label>
+            <input id="authNewPassword2" class="field-input" type="password" autocomplete="new-password" style="margin-top:4px" />
+          </div>
+        </div>
+        <div class="msg" id="authMsg" role="alert"></div>
+        <button type="submit" class="btn-submit" id="authSubmitBtn" style="margin-top:0">ログインする</button>
+        <p class="auth-note-box hidden" id="authNoConfirmNote">登録すると、入力したメールアドレスに <b>確認メール</b> が届くよ（送信は Gmail SMTP 経由・送信元は youzhenshengu54@gmail.com）。メールの中のリンクを押して本人確認が終わってから、ログインしてね。届かないときは迷惑メールフォルダも見てね。</p>
+        <div class="auth-btn-row hidden" id="authResendRow">
+          <button type="button" class="btn-outline" id="authResendBtn">確認メールを もう一度 送る</button>
+        </div>
+      </form>
+
+      <div class="auth-switch">
+        <button type="button" class="link-btn" id="authSwitchBtn">はじめての人は こちら（登録する）</button>
+      </div>
+    </div>
+
+    <div class="auth-card" style="margin-top:16px">
+      <h2 style="margin:0;font-size:18px;font-weight:900">確認メールを復活させる設定（Gmail SMTP接続・管理者が1回だけ）</h2>
+      <p class="auth-desc" style="text-align:left">確認メールは <b>GmailのSMTP</b> 経由で送るよ。Supabaseの標準送信だけだと「1時間に2通まで・プロジェクトのメンバー宛だけ」で、みんなには届かないよ。管理者のGmail（youzhenshengu54@gmail.com）をSMTPとして接続すると、無料で・自分のドメインなしで、登録した全員のメアドに届くようになるよ（Gmailの上限は1日500通まで）。下の設定は管理者が1回だけやってね。</p>
+      <ol class="steps">
+        <li><span class="num">1</span><p>送信に使うのは管理者の <b>Gmail（youzhenshengu54@gmail.com）</b> だよ。無料で使えて、自分のドメイン（〇〇.com のような住所）は不要だよ</p></li>
+        <li><span class="num">2</span><p>Googleアカウント（myaccount.google.com）で <b>2段階認証プロセス</b> をオンにしておく。オンになっていないと、次の「アプリパスワード」が作れないよ</p></li>
+        <li><span class="num">3</span><p>myaccount.google.com の検索窓で <b>「アプリパスワード」</b> と検索して開き、名前を <b>「Supabase」</b> にして作成する。表示される <b>16文字のパスワード</b> をコピーしておく ※これは普段のGmailのパスワードとは別の専用パスワードだよ。Supabaseの画面だけに入れるもので、このページには絶対に入れないでね</p></li>
+        <li><span class="num">4</span><p>Supabaseでこのプロジェクトを開いて、<b>Authentication → Emails → SMTP Settings</b>（画面によっては Project Settings → Auth → SMTP Settings）を開き、<b>Enable Custom SMTP</b> をオンにする</p></li>
+        <li><span class="num">5</span><p>SMTPに次の通り入れて <b>Save</b> を押す：<br>Host：<b>smtp.gmail.com</b> ／ Port：<b>587</b> ／ Username：<b>youzhenshengu54@gmail.com</b> ／ Password：手順3の <b>アプリパスワード（16文字）</b> ／ Sender email：<b>youzhenshengu54@gmail.com</b> ／ Sender name：<b>K</b></p></li>
+        <li><span class="num">6</span><p><b>Authentication → Providers → Email</b> を開いて、<b>「Confirm email」を オン</b>（青色）にして <b>Save</b> を押す</p></li>
+        <li><span class="num">7</span><p><b>Authentication → URL Configuration</b> で、<b>Site URL</b> にこのページ（K）のURLを設定する。これで確認メールのリンクを押すと、このページに戻ってログインできるよ</p></li>
+        <li><span class="num">8</span><p>この画面に戻って、新しく登録してテストしてね。入力したメアドに確認メールが届いて、リンクを押すとログインできるようになるよ</p></li>
+      </ol>
+      <p class="auth-desc" style="text-align:left;margin-top:12px"><b>確認メールが届かないときは：</b>迷惑メールフォルダを見る → 上のフォームの「確認メールを もう一度 送る」を押す → それでも届かないときは、手順5のSMTP設定（特にアプリパスワードと送信元アドレス）と、手順6で Confirm email がオンになっているかを確かめてね。確認メールは送信元が youzhenshengu54@gmail.com で届くよ。1日にたくさん送りすぎるとGmailの上限（1日500通）で止まることがあるよ。</p>
+      <p class="auth-desc" style="text-align:left;margin-top:8px">※前に「確認メールなし」で作ったアカウントは、そのままパスワードでログインできるよ。新しく登録する人から、確認メールでの本人確認が必要になるよ。</p>
+    </div>
+  </main>
+</div>
+
+<!-- ================= break overlay ================= -->
+<div class="overlay" id="breakOverlay" role="alertdialog" aria-modal="true" aria-label="おやすみタイム">
+  <div class="box">
+    <div class="moon" style="background:#9a7bff"><svg width="52" height="52" viewBox="0 0 24 24" fill="#ffffff" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
+    <div id="breakActive">
+      <p class="big">10分 つかったよ！</p>
+      <p class="txt">れんぞくで つかえるのは 10分まで。目を 休めて、遠くを 見たり、体を 動かしたりして おやすみしよう。</p>
+      <p class="count-label">おやすみ おわりまで</p>
+      <p class="count" id="breakCount" aria-live="polite">1:00</p>
+    </div>
+    <div id="breakDone" class="hidden">
+      <p class="big">おやすみ おわり！</p>
+      <p class="txt">目も 気分も リフレッシュできたかな？ また 10分 あそべるよ。</p>
+      <button type="button" class="btn-again" id="breakAgainBtn">また あそぶ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+"use strict";
+
+/* ================= helpers ================= */
+function $(id) { return document.getElementById(id);}
+function esc(s) {
+return String(s == null? "": s).replace(/[&<>"']/g, function (c) {
+return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c];
+});
+}
+var MAX_COUNT = 1000000000; // 10億
+function cap(n) { return Math.min(MAX_COUNT, Math.max(0, Math.floor(n)));}
+function fmt(n) { return cap(n).toLocaleString("ja-JP");}
+
+/* ================= design constants (same as Muse version) ================= */
+var SHAPES = [
+{ key: "maru", label: "まる"}, { key: "hoshi", label: "ほし"}, { key: "heart", label: "ハート"},
+{ key: "hana", label: "おはな"}, { key: "tsuki", label: "つき"}, { key: "kumo", label: "くも"}
+];
+var COLORS = [
+{ key: "sky", label: "そらいろ", hex: "#1d9bf0"}, { key: "coral", label: "コーラル", hex: "#ff7a7a"},
+{ key: "sun", label: "たいよう", hex: "#f5b81d"}, { key: "mint", label: "ミント", hex: "#2fbf85"},
+{ key: "grape", label: "ぶどう", hex: "#9a7bff"}, { key: "peach", label: "ももいろ", hex: "#ff9d5c"}
+];
+var MOODS = [
+{ key: "happy", label: "うれしい", hex: "#f5b81d"}, { key: "excited", label: "わくわく", hex: "#ff7a7a"},
+{ key: "proud", label: "じまん！", hex: "#9a7bff"}, { key: "thanks", label: "ありがとう", hex: "#2fbf85"},
+{ key: "wow", label: "びっくり", hex: "#1d9bf0"}
+];
+var REACTIONS = [
+{ key: "heart", label: "だいすき", color: "#f91880"}, { key: "star", label: "すごい", color: "#f5b81d"},
+{ key: "like", label: "いいね", color: "#1d9bf0"}, { key: "sparkles", label: "キラキラ", color: "#7856ff"}
+];
+var PHRASES = ["すごいね！", "いいね！", "たのしそう！", "がんばったね！", "ありがとう！", "いっしょに あそぼう！", "おめでとう！", "だいすき！"];
+var SHOP_TEMPLATES = [
+{ label: "お知らせ", text: "【お知らせ】○○について お知らせします。"},
+{ label: "新商品", text: "【新商品】あたらしい ○○が 入りました！ ぜひ 見に来てね。"},
+{ label: "セール", text: "【セール】きょうから ○○が お買い得です！"},
+{ label: "営業時間", text: "【営業時間のお知らせ】○○のため、営業時間が 変わります。"},
+{ label: "本日のおすすめ", text: "【本日のおすすめ】○○が おすすめです！"}
+];
+var OFFICIAL_CATEGORIES = ["おみせ・スーパー", "たべもの・カフェ", "ほん・ぶんぐ", "おもちゃ・ゲーム", "スポーツ", "がっこう・きょうしつ", "チーム・クラブ", "そのた"];
+var OCCUPATION_TYPES = ["おみせ", "有名人・活動者", "団体・チーム", "がっこう・きょうしつ", "そのた"];
+
+function colorHex(key) {
+for (var i = 0; i < COLORS.length; i++) if (COLORS[i].key === key) return COLORS[i].hex;
+return "#1d9bf0";
+}
+function shapePath(shape) {
+switch (shape) {
+case "hoshi": return '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/>';
+case "heart": return '<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>';
+case "hana": return '<circle cx="12" cy="6.2" r="3.4"/><circle cx="17.6" cy="10.3" r="3.4"/><circle cx="15.5" cy="16.8" r="3.4"/><circle cx="8.5" cy="16.8" r="3.4"/><circle cx="6.4" cy="10.3" r="3.4"/><circle cx="12" cy="11.4" r="2.6" fill="#ffd35c"/>';
+case "tsuki": return '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+case "kumo": return '<path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>';
+default: return '<circle cx="12" cy="12" r="9"/>';
+}
+}
+function shapeSvg(shape, size, color) {
+return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="' + (color || "#ffffff") + '" aria-hidden="true">' + shapePath(shape) + "</svg>";
+}
+function avatarHtml(shape, colorKey, size) {
+return '<span class="avatar" style="width:' + size + "px;height:" + size + "px;background:" + colorHex(colorKey) + '" aria-hidden="true">' + shapeSvg(shape, Math.round(size * 0.58)) + "</span>";
+}
+var VERIFIED_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="#1d9bf0" role="img" aria-label="あんぜんチェック済み" style="flex:none"><path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.26 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.45 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.33 2.33 4.2-4.2 1.41 1.42-5.61 5.61z"/></svg>';
+var SHIELD_SVG = function (size, color) {
+return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="' + (color || "#00ba7c") + '" aria-hidden="true"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>';
+};
+function reactionSvg(kind, size, color) {
+if (kind === "heart") return shapeSvg("heart", size, color);
+if (kind === "star") return shapeSvg("hoshi", size, color);
+if (kind === "sparkles") return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="' + color + '" aria-hidden="true"><path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>';
+return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="' + color + '" aria-hidden="true"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>';
+}
+var EYE_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+var CHAT_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>';
+function bookmarkSvg(filled) {
+return '<svg width="18" height="18" viewBox="0 0 24 24" fill="' + (filled? "#1d9bf0": "none") + '" stroke="' + (filled? "#1d9bf0": "#8899a6") + '" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
+}
+function confettiHtml(seed) {
+var colors = ["#f91880", "#f5b81d", "#1d9bf0", "#00ba7c", "#7856ff", "#ff9d5c"];
+var out = '<div class="confetti-wrap" aria-hidden="true">';
+for (var i = 0; i < 18; i++) {
+var n = Math.abs(Math.sin(seed * 97 + i * 131) * 10000);
+var left = (n % 96) + 2, delay = (n % 45) / 100, size = 7 + (n % 6), round = i % 3 === 0;
+out += '<span class="confetti-piece" style="left:' + left + "%;width:" + size + "px;height:" + (round? size: size * 0.5) + "px;border-radius:" + (round? "50%": "2px") + ";background:" + colors[i % colors.length] + ";animation-delay:" + delay + 's"></span>';
+}
+return out + "</div>";
+}
+
+/* ================= banned words (same filter as before) ================= */
+function normalizeText(s) {
+if (!s) return "";
+var t = String(s).toLowerCase();
+t = t.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0);});
+t = t.replace(/[ァ-ヶ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0x60);});
+t = t.replace(/[○●◎〇◯×✕✖・.\s　_\-ー~〜!！?？*＊#＃@＠]/g, "");
+return t;
+}
+var BANNED = [
+"性行為", "自慰行為", "自慰", "性交", "性器",
+"せっくす", "おなにー", "じいこうい", "せいこうい", "せいこう", "まんこ", "ちんこ", "ちんちん",
+"おっぱい", "えろ", "あだると", "ふぇら", "ぱいずり", "らぶほてる", "そーぷ", "ふうぞく",
+"sex", "porno", "porn", "hentai",
+"しね", "ころす", "ころして", "きもい", "うざい", "ばかやろう", "くそやろう", "でぶ", "ぶす",
+"はげ", "ちび", "のうなし", "あほんだら", "まぬけ", "どじ", "きえろ", "うせろ",
+"さけ", "たばこ", "ぎゃんぶる", "ばくち",
+/* --- insulting words (侮辱的な言葉) — confirmed & expanded 2026-11-01.
+   Kanji, hiragana and English forms are all listed because normalizeText
+   folds katakana/full-width to hiragana/lowercase but leaves kanji as-is.
+   These are blocked in posts, profile/official fields, official-account
+   replies AND AI fan replies (AI output is re-checked, see
+   makeSafeAiReply). The list itself is never shown on the page. */
+"死ね", "殺す", "殺せ", "殺して", "ぶっ殺す", "消えろ", "黙れ", "馬鹿", "阿呆", "低能", "無能",
+"役立たず", "気持ち悪い", "気色悪い", "鬱陶しい", "下手くそ", "雑魚", "不細工", "醜い", "禿げ",
+"ばか", "あほ", "くそ", "くず", "かす", "ごみくず", "ざこ", "ころせ", "ぶっころす",
+"きしょい", "きしょ", "きもちわるい", "うっとうしい", "じゃまもの", "だまれ", "へたくそ",
+"ていのう", "むのう", "やくたたず", "ぶさいく", "うるさいやつ", "きえうせろ",
+"大麻", "麻薬", "覚醒剤",
+"stupid", "idiot", "loser", "shutup", "fuck", "shit", "bitch", "bastard"
+].map(normalizeText);
+/* Insult-only subset: replies to official accounts are rejected on this
+   list even before the general check, with a dedicated message. */
+var INSULTS = [
+"死ね", "殺す", "殺せ", "殺して", "ぶっ殺す", "消えろ", "黙れ", "馬鹿", "阿呆", "低能", "無能",
+"役立たず", "気持ち悪い", "気色悪い", "鬱陶しい", "下手くそ", "雑魚", "不細工", "醜い",
+"しね", "ころす", "ころして", "ころせ", "ぶっころす", "きもい", "うざい", "ばかやろう", "くそやろう",
+"でぶ", "ぶす", "はげ", "ちび", "のうなし", "あほんだら", "まぬけ", "きえろ", "うせろ",
+"ばか", "あほ", "くそ", "くず", "かす", "ざこ", "きしょい", "きしょ", "きもちわるい",
+"うっとうしい", "だまれ", "へたくそ", "ていのう", "むのう", "やくたたず", "ぶさいく",
+"stupid", "idiot", "loser", "shutup", "fuck", "shit", "bitch", "bastard"
+].map(normalizeText);
+function hasInsult(s) {
+var n = normalizeText(s);
+if (!n) return false;
+for (var i = 0; i < INSULTS.length; i++) {
+var b = INSULTS[i];
+if (b && n.indexOf(b) !== -1) return true;
+}
+return false;
+}
+function hasBanned(s) {
+var n = normalizeText(s);
+if (!n) return false;
+for (var i = 0; i < BANNED.length; i++) {
+var b = BANNED[i];
+if (!b) continue;
+if (n.indexOf(b)!== -1) return true;
+if (b.length >= 4) {
+for (var j = 0; j < b.length; j++) {
+var v = b.slice(0, j) + b.slice(j + 1);
+if (v.length >= 3 && n.indexOf(v)!== -1) return true;
+}
+}
+}
+// links / phone-like long digit runs are also blocked, like the original rules
+var digits = String(s || "").replace(/[^0-9０-９]/g, "");
+if (digits.length >= 7) return true;
+if (/https?:|www\.|\.com|\.jp|\.net/.test(String(s || "").toLowerCase())) return true;
+return false;
+}
+var BANNED_MSG = "子供に適さない言葉や、リンク・電話番号みたいな数字が入っているよ。言葉を変えて もう一度ためしてね。";
+var INSULT_MSG = "侮辱的な言葉が入っているため、返信できません。相手を傷つけない言葉に変えてから、もう一度ためしてね。";
+var REPLY_BANNED_MSG = "子供に適さない言葉が入っているため、返信できません。言葉を変えて もう一度ためしてね。";
+/* Fixed administrator for K: only this email can approve official
+   accounts. It never moves to another account. */
+var ADMIN_EMAIL = "youzhenshengu54@gmail.com";
+function isAdmin() { return !!loggedInEmail && loggedInEmail.toLowerCase() === ADMIN_EMAIL; }
+
+/* ================= Supabase connection (public version) =================
+   The key embedded in this page is the PUBLISHABLE key
+   (sb_publishable_...) — the public key meant for browsers.
+   The SECRET key (sb_secret_..., formerly service_role) must NEVER
+   be put in this page: anyone who knows it can read and write
+   everyone's data. It stays inside Supabase only.
+   Project URL was shared by the owner and is embedded below, so
+   the connection is live as soon as the setup SQL has been run in
+   the Supabase SQL Editor. The URL can still be changed later from
+   the settings card (in memory) or by replacing SUPABASE_URL. */
+var SUPABASE_URL = "https://zwjqbidxglpqhzbgifhf.supabase.co";
+var SUPABASE_PUBLISHABLE_KEY = "sb_publishable_G0iMo5l1Q9uf7PwMmsS8Tg__CMwQCRJ";
+var supabaseUrlDraft = SUPABASE_URL;
+var supabaseMsg = "";
+var supabaseMsgOk = false;
+function supaBase() { return (supabaseUrlDraft || "").replace(/\/+$/, ""); }
+function supaConfigText() {
+  return 'const SUPABASE_URL = "' + (supabaseUrlDraft || "ここに Project URL") + '";\n' +
+    'const SUPABASE_PUBLISHABLE_KEY = "' + SUPABASE_PUBLISHABLE_KEY + '";';
+}
+
+/* Setup SQL for the Supabase SQL Editor: tables + RLS policies.
+   Run once. Everyone can read posts/profiles (public SNS); writing
+   is limited to the signed-in owner of each row (auth.uid()). */
+var SUPABASE_SQL = [
+"-- K 設定用SQL",
+"-- Supabaseの SQL Editor に貼って、1回だけ実行してね",
+"",
+"create table if not exists public.profiles (",
+"  id uuid primary key references auth.users(id) on delete cascade,",
+"  nickname text not null,",
+"  shape text not null default 'heart',",
+"  color text not null default 'sky',",
+"  created_at timestamptz not null default now()",
+");",
+"",
+"create table if not exists public.posts (",
+"  id bigint generated always as identity primary key,",
+"  user_id uuid not null references auth.users(id) on delete cascade,",
+"  author_name text not null,",
+"  author_handle text not null default '',",
+"  shape text not null default 'maru',",
+"  color text not null default 'sky',",
+"  is_official boolean not null default false,",
+"  category text not null default '',",
+"  location text not null default '',",
+"  hours text not null default '',",
+"  body text not null,",
+"  mood text not null default '',",
+"  views bigint not null default 0,",
+"  buzz numeric not null default 0,",
+"  created_at timestamptz not null default now()",
+");",
+"",
+"-- Posts made before this line existed get the photo column too.",
+"alter table public.posts add column if not exists photo text;",
+"",
+"create table if not exists public.comments (",
+"  id bigint generated always as identity primary key,",
+"  post_id bigint not null references public.posts(id) on delete cascade,",
+"  user_id uuid not null references auth.users(id) on delete cascade,",
+"  phrase text not null,",
+"  created_at timestamptz not null default now()",
+");",
+"",
+"create table if not exists public.reactions (",
+"  post_id bigint not null references public.posts(id) on delete cascade,",
+"  user_id uuid not null references auth.users(id) on delete cascade,",
+"  kind text not null,",
+"  primary key (post_id, user_id, kind)",
+");",
+"",
+"create table if not exists public.follows (",
+"  user_id uuid not null references auth.users(id) on delete cascade,",
+"  target_key text not null,",
+"  created_at timestamptz not null default now(),",
+"  primary key (user_id, target_key)",
+");",
+"",
+"create table if not exists public.official_accounts (",
+"  id bigint generated always as identity primary key,",
+"  user_id uuid not null references auth.users(id) on delete cascade,",
+"  name text not null,",
+"  handle text not null default '',",
+"  bio text not null default '',",
+"  category text not null default '',",
+"  occupation text not null default '',",
+"  location text not null default '',",
+"  hours text not null default '',",
+"  shape text not null default 'hoshi',",
+"  color text not null default 'sun',",
+"  status text not null default 'pending',",
+"  created_at timestamptz not null default now()",
+");",
+"",
+"alter table public.profiles enable row level security;",
+"alter table public.posts enable row level security;",
+"alter table public.comments enable row level security;",
+"alter table public.reactions enable row level security;",
+"alter table public.follows enable row level security;",
+"alter table public.official_accounts enable row level security;",
+"",
+"drop policy if exists profiles_read on public.profiles;",
+"create policy profiles_read on public.profiles for select using (true);",
+"drop policy if exists profiles_insert on public.profiles;",
+"create policy profiles_insert on public.profiles for insert with check (auth.uid() = id);",
+"drop policy if exists profiles_update on public.profiles;",
+"create policy profiles_update on public.profiles for update using (auth.uid() = id) with check (auth.uid() = id);",
+"drop policy if exists profiles_delete on public.profiles;",
+"create policy profiles_delete on public.profiles for delete using (auth.uid() = id);",
+"",
+"drop policy if exists posts_read on public.posts;",
+"create policy posts_read on public.posts for select using (true);",
+"drop policy if exists posts_insert on public.posts;",
+"create policy posts_insert on public.posts for insert with check (auth.uid() = user_id);",
+"drop policy if exists posts_update on public.posts;",
+"create policy posts_update on public.posts for update using (auth.uid() = user_id) with check (auth.uid() = user_id);",
+"drop policy if exists posts_delete on public.posts;",
+"create policy posts_delete on public.posts for delete using (auth.uid() = user_id);",
+"",
+"drop policy if exists comments_read on public.comments;",
+"create policy comments_read on public.comments for select using (true);",
+"drop policy if exists comments_insert on public.comments;",
+"create policy comments_insert on public.comments for insert with check (auth.uid() = user_id);",
+"drop policy if exists comments_delete on public.comments;",
+"create policy comments_delete on public.comments for delete using (auth.uid() = user_id);",
+"",
+"drop policy if exists reactions_read on public.reactions;",
+"create policy reactions_read on public.reactions for select using (true);",
+"drop policy if exists reactions_insert on public.reactions;",
+"create policy reactions_insert on public.reactions for insert with check (auth.uid() = user_id);",
+"drop policy if exists reactions_delete on public.reactions;",
+"create policy reactions_delete on public.reactions for delete using (auth.uid() = user_id);",
+"",
+"drop policy if exists follows_read on public.follows;",
+"create policy follows_read on public.follows for select using (auth.uid() = user_id);",
+"drop policy if exists follows_insert on public.follows;",
+"create policy follows_insert on public.follows for insert with check (auth.uid() = user_id);",
+"drop policy if exists follows_delete on public.follows;",
+"create policy follows_delete on public.follows for delete using (auth.uid() = user_id);",
+"",
+"drop policy if exists official_read on public.official_accounts;",
+"create policy official_read on public.official_accounts for select using (true);",
+"drop policy if exists official_insert on public.official_accounts;",
+"create policy official_insert on public.official_accounts for insert with check (auth.uid() = user_id);",
+"drop policy if exists official_update on public.official_accounts;",
+"create policy official_update on public.official_accounts for update using (auth.uid() = user_id or coalesce(auth.jwt() ->> 'email', '') = 'youzhenshengu54@gmail.com') with check (auth.uid() = user_id or coalesce(auth.jwt() ->> 'email', '') = 'youzhenshengu54@gmail.com');",
+"drop policy if exists official_delete on public.official_accounts;",
+"create policy official_delete on public.official_accounts for delete using (auth.uid() = user_id);"
+].join("\n");
+
+/* Emergency-only SQL for the admin: marks every unconfirmed
+   account as confirmed by hand. Normal flow is the confirmation
+   email sent via Gmail SMTP — use this only when that email truly
+   cannot reach someone whose identity the admin verified. */
+var SUPABASE_AUTOCONFIRM_SQL = [
+"-- K 未確認アカウントを 管理者が手動で確認済みにするSQL（困ったときだけ）",
+"-- 確認メール（Gmail）がどうしても届かず、本人だと管理者が直接確かめられたときだけ使う",
+"-- Supabaseの SQL Editor に貼って実行すると、未確認のアカウントが確認済みになって",
+"-- パスワードで ログインできるようになるよ（通常はメールの中のリンクで確認してね）",
+"",
+"update auth.users",
+"set email_confirmed_at = now()",
+"where email_confirmed_at is null;"
+].join("\n");
+
+/* Wipe SQL for the Supabase SQL Editor: deletes every account in
+   auth.users and all SNS data (profiles/posts/etc. cascade or are
+   deleted first). Irreversible — run once, only when starting over. */
+var SUPABASE_WIPE_SQL = [
+"-- K アカウント・データ全削除SQL",
+"-- 注意：実行すると、登録したアカウントと、ポストなど全部のデータが消えて、元に戻せません",
+"-- Supabaseの SQL Editor に貼って実行してね（アカウントを全部消して最初から始めたいときだけ）",
+"",
+"delete from public.reactions;",
+"delete from public.comments;",
+"delete from public.follows;",
+"delete from public.official_accounts;",
+"delete from public.posts;",
+"delete from public.profiles;",
+"delete from auth.users;"
+].join("\n");
+var supaAutoChecked = false;
+
+/* ================= safe example posts (same content as Muse version) ================= */
+var SAFE_CATEGORIES = [
+{ key: "all", label: "すべて"}, { key: "news", label: "ニュース"}, { key: "sports", label: "スポーツ"},
+{ key: "music", label: "音楽"}, { key: "weather", label: "天気"}, { key: "science", label: "かがく"},
+{ key: "animals", label: "どうぶつ"}, { key: "food", label: "たべもの"}, { key: "life", label: "せいかつ"},
+{ key: "art", label: "アート・本"}
+];
+var SAFE_POSTS = [
+{ id: 1, name: "うちゅう博士", handle: "space_hakase", shape: "hoshi", color: "grape", time: "2時間", category: "science", categoryLabel: "かがく", body: "今夜の月を見てみて。月は太陽の光を反射して光っているよ。毎日少しずつ形が変わって見えるのがふしぎだね。", likes: 214},
+{ id: 2, name: "どうぶつ博士", handle: "animal_hakase", shape: "heart", color: "mint", time: "3時間", category: "animals", categoryLabel: "どうぶつ", body: "コアラはユーカリの葉が大好きで、1日のほとんどを木の上で過ごすよ。動物園で会ったら、寝ている時間も大切にしてあげてね。", likes: 186},
+{ id: 3, name: "クッキング先生", handle: "cooking_sensei", shape: "hana", color: "coral", time: "5時間", category: "food", categoryLabel: "たべもの", body: "野菜を切るときは、指を丸めて「ねこの手」にするのが安全のコツ。大人の人と一緒に料理しよう。", likes: 158},
+{ id: 4, name: "スポーツコーチ", handle: "sports_coach", shape: "maru", color: "sky", time: "6時間", category: "sports", categoryLabel: "スポーツ", body: "運動の前は準備運動をしよう。終わったあとは水を飲んで休むことも、強くなるための大切な練習だよ。", likes: 142},
+{ id: 5, name: "お天気博士", handle: "weather_hakase", shape: "kumo", color: "sky", time: "8時間", category: "weather", categoryLabel: "天気", body: "雲にはいろいろな形があるよ。もくもくの雲、すーっと長い雲。空を見上げて、雲の形当てクイズをしてみよう。", likes: 121},
+{ id: 6, name: "うみの博士", handle: "umi_hakase", shape: "kumo", color: "mint", time: "昨日", category: "animals", categoryLabel: "どうぶつ", body: "ウミガメは海を長く泳ぐよ。海をきれいに保つことは、ウミガメたちの家を守ることになるんだ。", likes: 203},
+{ id: 7, name: "アート先生", handle: "art_sensei", shape: "hana", color: "peach", time: "昨日", category: "art", categoryLabel: "アート・本", body: "絵は上手・下手じゃなくて、見つけた色を楽しむもの。今日見た空の色を、クレヨンで塗ってみよう。", likes: 167},
+{ id: 8, name: "本の先生", handle: "hon_sensei", shape: "tsuki", color: "sun", time: "昨日", category: "art", categoryLabel: "アート・本", body: "本は1日10分でも大丈夫。昨日読んだところを思い出してから読むと、物語がもっと楽しくなるよ。", likes: 134},
+{ id: 9, name: "音楽の先生", handle: "music_sensei", shape: "hoshi", color: "coral", time: "2日前", category: "music", categoryLabel: "音楽", body: "歌うときは大きな声より、言葉を大切に歌うと気持ちが伝わるよ。好きな歌を家族に聴かせてみよう。", likes: 119},
+{ id: 10, name: "うちゅう博士", handle: "space_hakase", shape: "hoshi", color: "grape", time: "1時間", category: "science", categoryLabel: "かがく", body: "土星には大きな環（わ）があるよ。環は氷や岩の小さなつぶが、たくさん集まってできているんだ。望遠鏡で見ると、とてもきれいだよ。", likes: 231},
+{ id: 11, name: "じっけん博士", handle: "jikken_hakase", shape: "maru", color: "sun", time: "4時間", category: "science", categoryLabel: "かがく", body: "磁石は鉄でできたものをくっつける力があるよ。クリップで試してみよう。ただし、電気製品やカードには近づけないでね。", likes: 98},
+{ id: 12, name: "お天気博士", handle: "weather_hakase", shape: "kumo", color: "sky", time: "7時間", category: "weather", categoryLabel: "天気", body: "雨上がりに太陽が出ると、虹が見えることがあるよ。虹は、太陽の光が空気中の水のつぶの中で分かれて見えるものなんだ。", likes: 176},
+{ id: 13, name: "しょくぶつ博士", handle: "shokubutsu_hakase", shape: "hana", color: "mint", time: "昨日", category: "science", categoryLabel: "かがく", body: "たんぽぽの白い綿毛は、種についたパラシュートみたいなもの。風に乗って遠くまで旅をして、新しい場所で芽を出すよ。", likes: 149},
+{ id: 14, name: "むし博士", handle: "mushi_hakase", shape: "maru", color: "mint", time: "2時間", category: "animals", categoryLabel: "どうぶつ", body: "アリは自分の体より重いものでも運べる、力持ちの虫だよ。列を作って歩く姿を、そっと観察してみよう。つかまえたりしないでね。", likes: 132},
+{ id: 15, name: "ペンギン博士", handle: "penguin_hakase", shape: "tsuki", color: "sky", time: "4時間", category: "animals", categoryLabel: "どうぶつ", body: "ペンギンは鳥の仲間だけど、空は飛べないんだ。その代わり、海の中を泳ぐのがとっても得意だよ。", likes: 245},
+{ id: 16, name: "どうぶつ博士", handle: "animal_hakase", shape: "heart", color: "mint", time: "昨日", category: "animals", categoryLabel: "どうぶつ", body: "ジャイアントパンダは竹や笹が大好物。1日の多くの時間を、食事に使っているよ。動物園では静かに見守ってあげよう。", likes: 198},
+{ id: 17, name: "うみの博士", handle: "umi_hakase", shape: "kumo", color: "mint", time: "2日前", category: "animals", categoryLabel: "どうぶつ", body: "タツノオトシゴは魚の仲間。お父さんがお腹のふくろで赤ちゃんを育てる、めずらしい魚だよ。", likes: 187},
+{ id: 18, name: "クッキング先生", handle: "cooking_sensei", shape: "hana", color: "coral", time: "3時間", category: "life", categoryLabel: "せいかつ", body: "料理の前は、せっけんで手を洗おう。指の間や爪の先まで洗うと、汚れやばい菌を落とせるよ。", likes: 143},
+{ id: 19, name: "あんぜん先生", handle: "anzen_sensei", shape: "maru", color: "sun", time: "5時間", category: "life", categoryLabel: "せいかつ", body: "道路を渡るときは、右と左をよく見て、車が来ていないか確かめてから渡ろう。手を上げると、運転手さんから見えやすくなるよ。", likes: 171},
+{ id: 20, name: "スポーツコーチ", handle: "sports_coach", shape: "maru", color: "sky", time: "昨日", category: "sports", categoryLabel: "スポーツ", body: "たくさん寝ることも、体を強くする大切な練習だよ。夜更かししないで、早めに寝よう。", likes: 126},
+{ id: 21, name: "工作先生", handle: "kosaku_sensei", shape: "hana", color: "peach", time: "6時間", category: "art", categoryLabel: "アート・本", body: "牛乳パックは工作の材料になるよ。使う前に洗って、よく乾かしてから使おう。はさみで切るときは、大人の人と一緒にね。", likes: 155},
+{ id: 22, name: "アート先生", handle: "art_sensei", shape: "hana", color: "peach", time: "昨日", category: "art", categoryLabel: "アート・本", body: "折り紙で鶴を折ってみよう。角と角をぴったり合わせると、きれいに仕上がるよ。失敗しても、もう1枚でやり直せるのが折り紙のいいところ。", likes: 164},
+{ id: 23, name: "本の先生", handle: "hon_sensei", shape: "tsuki", color: "sun", time: "2日前", category: "art", categoryLabel: "アート・本", body: "読み終わった本は、好きだった場面を1つ思い出してみよう。家族や友だちに話すと、楽しさが2倍になるよ。", likes: 141},
+{ id: 24, name: "音楽の先生", handle: "music_sensei", shape: "hoshi", color: "coral", time: "3日前", category: "music", categoryLabel: "音楽", body: "手拍子でリズム遊びをしよう。好きな歌に合わせて手を叩くと、音楽がもっと楽しくなるよ。", likes: 112},
+{ id: 25, name: "ニュース博士", handle: "news_hakase", shape: "maru", color: "sky", time: "1時間", category: "news", categoryLabel: "ニュース", body: "ニュースは「いつ・どこで・なにがあったか」を伝えるものだよ。気になるニュースは、大人の人と一緒に見て、「ほんとうかな？」と考えてみよう。", likes: 88},
+{ id: 26, name: "ニュース博士", handle: "news_hakase", shape: "maru", color: "sky", time: "昨日", category: "news", categoryLabel: "ニュース", body: "住んでいる町のニュースは、図書館や公民館の掲示板でも見つけられるよ。家族と一緒に行って、近くのイベントを探してみよう。", likes: 76},
+{ id: 27, name: "スポーツコーチ", handle: "sports_coach", shape: "maru", color: "sky", time: "3時間", category: "sports", categoryLabel: "スポーツ", body: "卓球は、相手が打ち返しやすいボールを返すとラリーが長く続くよ。続いた回数を数えるのも楽しいよ。", likes: 163},
+{ id: 28, name: "スポーツコーチ", handle: "sports_coach", shape: "maru", color: "sky", time: "2日前", category: "sports", categoryLabel: "スポーツ", body: "かけっこは、腕を前後に大きく振ると速く走りやすいよ。ゴールのほうを見て走ってみよう。", likes: 117},
+{ id: 29, name: "音楽の先生", handle: "music_sensei", shape: "hoshi", color: "coral", time: "5時間", category: "music", categoryLabel: "音楽", body: "ピアノには高い音と低い音があるよ。鍵盤の右のほうが高い音、左のほうが低い音。比べて弾いてみよう。", likes: 129},
+{ id: 30, name: "お天気博士", handle: "weather_hakase", shape: "kumo", color: "sky", time: "2時間", category: "weather", categoryLabel: "天気", body: "雨の日は、明るい色の傘や服だと、車の運転手さんから見えやすくなって安全だよ。", likes: 154},
+{ id: 31, name: "クッキング先生", handle: "cooking_sensei", shape: "hana", color: "coral", time: "4時間", category: "food", categoryLabel: "たべもの", body: "朝ごはんを食べると、体も頭も元気になるよ。ごはんやパン、卵、牛乳など、いろいろ組み合わせて食べよう。", likes: 148},
+{ id: 32, name: "クッキング先生", handle: "cooking_sensei", shape: "hana", color: "coral", time: "昨日", category: "food", categoryLabel: "たべもの", body: "おにぎり作りに挑戦しよう。あたたかいごはんに具を入れて、ラップで包んで握ると手が汚れないよ。大人の人と一緒に作ってね。", likes: 171}
+];
+
+var QUIZZES = [
+{ id: 1, question: "ペンギンは 空を 飛べる？", choices: ["飛べる", "飛べない（泳ぐのが 得意）", "走るだけ"], answer: 1, explain: "ペンギンは鳥の仲間だけど、空ではなく海を泳ぐのが得意だよ。"},
+{ id: 2, question: "土星のまわりの 大きな輪（わ）は 何で できている？", choices: ["わたあめ", "ガラス", "氷や岩の 小さなつぶ"], answer: 2, explain: "土星の輪は、氷や岩の小さなつぶがたくさん集まってできているよ。"},
+{ id: 3, question: "月が 光って 見えるのは なぜ？", choices: ["月が 自分で 光っているから", "太陽の光を 反射（はんしゃ）しているから", "星の光を あつめているから"], answer: 1, explain: "月は自分では光らないよ。太陽の光が当たって反射して見えるんだ。"},
+{ id: 4, question: "アリが 運べる 重さは？", choices: ["自分の体より 重いものも 運べる", "何も 運べない", "紙1まいだけ"], answer: 0, explain: "アリは力持ち。自分の体より重いものでも運べるよ。"},
+{ id: 5, question: "たんぽぽの 白い綿毛（わたげ）は 何のため？", choices: ["食べるため", "風で 種を 遠くへ 運ぶため", "泳ぐため"], answer: 1, explain: "綿毛は種のパラシュート。風に乗って遠くまで旅するよ。"},
+{ id: 6, question: "手を洗うときに 大切なのは？", choices: ["水だけ 一瞬かける", "洗わなくて いい", "せっけんで 指の間まで 洗う"], answer: 2, explain: "せっけんで指の間や爪の先まで洗うと、汚れを落とせるよ。"}
+];
+
+/* ================= state ================= */
+/* The signed-in account's own profile. This MUST NOT carry a fixed
+   person's name as the default: every account resolves its own
+   nickname in applyAccountProfile() at login (saved profile row ->
+   signup metadata -> email-derived name), so different people never
+   all show up as the same person. */
+var profile = { nickname: "ニックネーム", shape: "heart", color: "sky" };
+var currentUserId = "";
+var view = "home";
+var tlFilter = "all";
+var postAs = 0; // 0 = self, otherwise official application id (approved only)
+var uid = 100;
+var followingOfficial = {}; // key -> true
+var followingSafe = {};     // handle -> true
+var officialApps = [];      // my official account applications
+var missions = [
+  { id: 1, topic: "きせつを かんじる はなし（そら・かぜ・おと）を とうこうしよう", done: false },
+  { id: 2, topic: "あした やりたいことを とうこうしよう", done: false },
+  { id: 3, topic: "すきな たべものの はなしを とうこうしよう", done: false }
+];
+
+function newPost(o) {
+  return {
+    id: ++uid, authorKind: o.authorKind, name: o.name, handle: o.handle || "",
+    shape: o.shape, color: o.color, official: !!o.official, verified: !!o.verified,
+    category: o.category || "", location: o.location || "", hours: o.hours || "",
+    followKey: o.followKey || "", timeLabel: o.timeLabel || "いま", body: o.body || "",
+    mood: o.mood || "", photo: o.photo || null, views: o.views || 0, buzz: o.buzz || 0,
+    reactions: o.reactions || { heart: 0, star: 0, like: 0, sparkles: 0 },
+    myReactions: {}, comments: o.comments || [], aiReplies: o.aiReplies || [], replies: o.replies || [],
+    mine: !!o.mine, aiBusy: false
+  };
+}
+/* Timeline starts empty: all sample accounts/posts (ケン・みかん・さくら・
+   まるぱん・たっきゅう王・まちのニュース・ブックマート など) were removed
+   at the owner's request. New posts appear here as people post. */
+var posts = [];
+
+/* ================= AI fan replies (content-aware, star fans only) ================= */
+var FAN_NAMES = ["バズねこ", "ほしぞらファン", "おうえん隊長", "キラキラ応援団", "そらいろファン"];
+/* AI fan lines may use kanji and do not have to be child-directed
+   language (owner's decision). Every line still passes the banned-word
+   check in makeSafeAiReply before it can appear. */
+var TOPICS = [
+  { keys: ["卓球", "ラリー", "たっきゅう"], lines: ["ラリー{NUM}回は素晴らしいですね。集中力と継続力が光っています", "卓球のラリーの話、読んでいるだけで緊張感が伝わってきます", "次の記録更新も楽しみにしています。応援しています！"] },
+  { keys: ["サッカー", "リフティング", "ゴール"], lines: ["サッカー上達のコツ、参考になります。ありがとうございます", "リフティングの練習、私も挑戦してみたくなりました", "試合の話もぜひ聞かせてください"] },
+  { keys: ["パン", "メロンパン", "ケーキ", "ごはん", "食べ", "おいし", "カレー", "ラーメン", "おにぎり"], lines: ["美味しそうですね！ 読んだだけで食欲が湧いてきました", "食べ物の話は読む人を幸せにしますね。もっと聞きたいです", "今度ぜひ食べに行ってみたいです"] },
+  { keys: ["猫", "ねこ", "犬", "いぬ", "ペット"], lines: ["可愛いですね。動物の話は心が温まります", "もふもふの日常、もっと聞かせてください", "うちの子も箱が大好きです。共感しました"] },
+  { keys: ["歌", "音楽", "ピアノ", "うた", "発表会"], lines: ["音楽の話は元気をもらえますね", "発表会、応援しています。練習の成果が出ますように", "歌が上手になる過程、素敵ですね"] },
+  { keys: ["ニュース", "まつり", "大会", "お知らせ"], lines: ["情報をありがとうございます！ 行ってみたくなりました", "楽しそうなイベントですね", "友人にも共有したい内容でした"] },
+  { keys: ["勉強", "宿題", "テスト", "学校", "算数", "本", "読"], lines: ["努力を続けていて立派ですね。見習いたいです", "学校の話、とても共感しました", "継続こそ一番の力ですね"] },
+  { keys: ["ゲーム", "マイクラ", "マインクラフト"], lines: ["そのゲーム、私もプレイしています！", "今度一緒に遊びましょう", "ゲームの話、もっと聞かせてください"] },
+  { keys: ["作りました", "はじめ", "と言います", "です。ゆう"], lines: ["はじめまして！ これからの投稿が楽しみです", "よろしくお願いします。多くの人に届きますように"] }
+];
+/* Clean fallback lines, guaranteed free of banned words. Used when a
+   generated AI reply fails the banned-word check even after retries:
+   the failing reply is discarded and replaced by one of these. */
+var AI_SAFE_FALLBACKS = [
+  "投稿ありがとうございます。興味深く読みました",
+  "素敵な投稿ですね。応援しています",
+  "続きの投稿も楽しみにしています"
+];
+function makeAiReply(post) {
+  var text = post.body || "";
+  var lines = null;
+  for (var i = 0; i < TOPICS.length && !lines; i++) {
+    for (var j = 0; j < TOPICS[i].keys.length; j++) {
+      if (text.indexOf(TOPICS[i].keys[j]) !== -1) { lines = TOPICS[i].lines; break; }
+    }
+  }
+  if (!lines) {
+    var head = text.replace(/\s+/g, "").slice(0, 12);
+    lines = [
+      "「" + head + "…」の話、興味深いですね。詳しく聞かせてください",
+      "「" + head + "」という部分、とても共感しました",
+      "投稿を読みました。「" + head + "」の続きも楽しみにしています"
+    ];
+  }
+  var numMatch = text.match(/\d+/);
+  var line = lines[Math.floor(Math.random() * lines.length)];
+  if (line.indexOf("{NUM}") !== -1 && !numMatch) line = lines[1] || lines[0];
+  line = line.replace("{NUM}", numMatch ? numMatch[0] : "");
+  var used = post.aiReplies.map(function (r) { return r.label; });
+  var pool = FAN_NAMES.filter(function (n) { return used.indexOf(n) === -1; });
+  if (!pool.length) pool = FAN_NAMES;
+  return { label: pool[Math.floor(Math.random() * pool.length)], body: line };
+}
+/* Mandatory banned-word gate for ALL AI output (auto replies and
+   "もっと へんしん" alike): a generated reply that contains a banned
+   word — insults included — is NEVER shown. It is regenerated up to
+   3 times; if every attempt fails, it is discarded and replaced with
+   a clean fallback line (which is itself checked once more). */
+function makeSafeAiReply(post) {
+  for (var attempt = 0; attempt < 3; attempt++) {
+    var r = makeAiReply(post);
+    if (r && r.body && !hasBanned(r.body) && !hasInsult(r.body)) return r;
+    /* failed the check: discard this reply and rewrite */
+  }
+  var used = post.aiReplies.map(function (x) { return x.label; });
+  var pool = FAN_NAMES.filter(function (n) { return used.indexOf(n) === -1; });
+  if (!pool.length) pool = FAN_NAMES;
+  for (var i = 0; i < AI_SAFE_FALLBACKS.length; i++) {
+    if (!hasBanned(AI_SAFE_FALLBACKS[i]) && !hasInsult(AI_SAFE_FALLBACKS[i])) {
+      return { label: pool[Math.floor(Math.random() * pool.length)], body: AI_SAFE_FALLBACKS[i] };
+    }
+  }
+  return null; /* nothing clean to say: show no reply at all */
+}
+function pushSafeAiReply(post) {
+  var r = makeSafeAiReply(post);
+  if (r) post.aiReplies.push(r);
+  return !!r;
+}
+function buzzLabel(score) {
+  if (score >= 100) return "フルマックス！";
+  if (score >= 75) return "もうすぐ フルマックス";
+  if (score >= 50) return "すごく バズり中";
+  if (score >= 25) return "ぐんぐん バズり中";
+  return "じわじわ バズり中";
+}
+
+/* ================= shared card templates ================= */
+var RULES = [
+  "このSNSは子供だけでなく、大人も使えるよ。お店の人や有名人・活動している人、団体も公式アカウントを申請できるよ。年齢に関係なく、みんなが気持ちよく使える言葉で投稿してね",
+  "本名・自宅の住所・学校や勤務先など、個人が分かる情報は書かない（公式アカウントの申請でも本名と自宅の住所は聞かないよ）",
+  "子供も使うので、子供に適さない言葉（悪口・侮辱的な言葉・暴力の言葉・お酒やギャンブルの言葉など）は、大人の投稿でもブロックされて、ポストできないよ。禁止ワードは確認済みで、公式アカウントへの返信でも同じチェックが必ずかかって、侮辱的な言葉の返信は絶対に送れないよ",
+  "AIファンの返信・コメントにも禁止ワードチェックが必ずかかって、AIが禁止ワード（侮辱的な言葉を含む）を言うことは絶対にないよ。もし生成した文に禁止ワードが含まれていたら、その返信は出さずに書き直すか破棄する仕組みだよ",
+  "公式アカウントのポストには、文章で返信コメントができるよ（返信にも禁止ワードチェックが必ずかかるよ）",
+  "Kの管理者は youzhenshengu54@gmail.com に固定だよ。公式アカウントの審査・認証は管理者だけができるよ",
+  "リンクや 電話番号みたいな 数字も ポストには 入れられないよ",
+  "こまったら「つうほう」して、おとなに はなそう",
+  "しらない人とは つながらない（このSNSの外には でないよ）",
+  "「バズる」は このSNSの中だけの たのしみだよ",
+  "AIファンの おうえんだんが ポストを どんどん 広げて、バズり度は フルマックスまで 上がるよ",
+  "AIファンは ポストの内容を 読んでから、内容に合った へんしんを 書くよ。AIの返信は漢字を使ってもよく、必ずしも子供向けの言葉でなくてもよいよ（ただし禁止ワードは絶対に使わないよ）",
+  "写真を のせるときは、人の顔や おうち・住所が 分かるものは のせない",
+  "公式アカウントは審査制だよ。申請項目はアカウント名・種類・職業や活動の種別（大まかな区分）・紹介文・（お店の場合は市町村までの場所）・営業時間だけ。本名（氏名）と自宅の住所は申請でも送らないでね",
+  "申請はメールを使わず、アプリの中の「審査」にすぐ出るよ。管理者（youzhenshengu54@gmail.com に固定）がアプリの中で認証したアカウントだけが「認証済み」になってポストでき、その投稿はログイン中の全員が見られるよ",
+  "公式アカウントは、本物のお店みたいに @ユーザー名・種類・場所・営業時間を出せるよ。実在のお店や有名人の名前を使うときは、その本人・関係者だけが申請してね（なりすましはしない）",
+  "フォローは このSNSの中だけ：公式アカウントと、お手本ポストの 博士・先生を フォローできて、ホームで「フォロー中だけ」に 絞って 見られるよ",
+  "10分 つかったら おやすみタイム（1分）。目を 休めてから また あそぼう",
+  "メールアドレスごとに プロフィールと ポストは 別々だよ。別のメアドで ログインすると、そのメアドの プロフィールと ポストだけが 見えて、ほかのメアドのものは 見えないよ",
+  "アカウントを削除すると、そのアカウントのプロフィール・ポスト・公式アカウント・フォロー・ミッション・ログイン情報も一緒に消えて、元に戻せないよ。管理者は youzhenshengu54@gmail.com に固定で、ほかのアカウントに移ることはないよ",
+  "パスワードは ほかの人に 教えない・見せない",
+  "パスワードを 忘れたら、ログイン画面の「パスワードを 忘れた人は こちら」から、メールに 届く リンクで 新しい パスワードに 変えられるよ。元の パスワードは 安全のために 元の文字が 分からない形で 保存してあるから、表示は できないよ",
+  "新しく登録すると、入力したメールアドレスに確認メール（Gmailから送信・送信元は youzhenshengu54@gmail.com）が届くよ。メールの中のリンクを押して本人確認が終わってからログインできるよ。確認メールが届かないときは、迷惑メールフォルダを見るか、ログイン画面の「確認メールを もう一度 送る」を使ってね",
+  "お手本ポストは このSNSの中だけの れんしゅうだよ（有名人や 本物のお店の ポストじゃ ないよ）",
+  "AIの へんしんは AIが かいたものだよ"
+];
+function rulesCardHtml() {
+  return '<section class="card" aria-label="やさしいルール"><h2>みんなのルール</h2><ul class="rules">' +
+    RULES.map(function (r) { return "<li>・ " + esc(r) + "</li>"; }).join("") + "</ul></section>";
+}
+function supabaseCardHtml() {
+  return '<section class="card" aria-label="みんなで使う設定（Supabase）"><h2>みんなで使う設定（Supabase）</h2>' +
+    '<p class="card-sub">みんなの端末でポストを共有したり、メール＋パスワードの本物ログインを使うための接続だよ。接続先は Supabase（無料のサービス）だよ。</p>' +
+    '<div class="key-answer"><p class="ka-big">使うキーは「P」の Publishableキー だよ</p>' +
+    '<p>ページに組み込むのは <b>Publishableキー</b>（<code>sb_publishable_</code> で始まるキー）。これは みんなのブラウザで使うための「公開キー」で、このページにはもう組み込み済みだよ。</p></div>' +
+    '<p class="key-warn">「S」の Secretキー（<code>sb_secret_</code> で始まるキー。昔の名前は service_roleキー）は、絶対にページに入れないでね。そのキーを知った人は、全員のデータを読み書きできてしまう いちばん強い鍵だよ。Supabaseの画面の中だけに置いておくものだよ。</p>' +
+    '<div class="notice-ok show" style="margin-top:12px"><b>確認メールは Gmail SMTP 経由で送るよ（登録 → メールで本人確認 → ログイン）</b><br>このページは、登録すると確認メールが届いて、メールの中のリンクを押してからログインできる作りだよ。Supabaseの標準送信だけでは「1時間に2通まで・メンバー宛だけ」で全員には届かないので、メール送信は GmailのSMTP に接続してね（無料・ドメイン不要・1日500通まで）：<br><b>① Googleでアプリパスワード（16文字）を作る（2段階認証をオンにして、myaccount.google.com で「アプリパスワード」を検索） → ② Supabaseの Authentication → Emails → SMTP Settings で Enable Custom SMTP をオンにして、Host：smtp.gmail.com／Port：587／Username：youzhenshengu54@gmail.com／Password：アプリパスワード／Sender email：youzhenshengu54@gmail.com／Sender name：K を入れて Save → ③ Authentication → Providers → Email の「Confirm email」を オンにして Save → ④ Authentication → URL Configuration の Site URL にこのページのURLを設定</b><br>詳しい手順はログイン画面の下のカードにも書いてあるよ。確認メールは送信元が youzhenshengu54@gmail.com で届くよ。アプリパスワードはSupabaseの画面だけに入れるもので、このページには絶対に入れないでね。</div>' +
+    '<p class="status-line">Publishableキー：<span>設定済み（sb_publishable_G0iM…CMwQCRJ）</span></p>' +
+    '<p class="status-line">Project URL：<span data-supa-url-status>' + (supabaseUrlDraft ? "設定済み（" + esc(supabaseUrlDraft) + "）" : "まだ未設定（あとから設定できるよ）") + '</span></p>' +
+    '<form data-supa-form novalidate style="margin-top:12px">' +
+    '<label class="form-label">Project URL（あとから設定できるよ）</label>' +
+    '<input class="field-input" data-supa-url inputmode="url" autocomplete="off" placeholder="れい：https://abcdefgh.supabase.co" aria-label="Supabaseの Project URL" style="margin-top:4px" />' +
+    '<div class="msg" data-supa-msg role="alert"></div>' +
+    '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">' +
+    '<button type="submit" class="btn-post" style="min-height:44px;padding:6px 20px">このURLで 接続を確認する</button>' +
+    '<button type="button" class="btn-outline" data-supa-copy>設定コードを コピー</button>' +
+    "</div></form>" +
+    '<p class="form-label" style="margin-top:16px">ページに入っている設定コード</p>' +
+    '<code class="config-code" data-supa-code></code>' +
+    '<div class="warn-box" data-supa-sql-status style="margin-top:16px">設定用SQLの状態を 確認しているよ…</div>' +
+    '<p class="form-label" style="margin-top:16px">設定用SQL（Supabaseの SQL Editor に貼って実行してね）</p>' +
+    '<p class="card-sub">SQL Editorに貼った文字は、実行したあとや、SQL Editorを開き直したときに消えることがあるよ。でも、1回実行できていれば、作ったテーブルや安全ルール（RLS）はSupabaseの中に残るから大丈夫。上の表示が「実行済み」になっていれば、文字が消えていても直す必要はないよ。文字が必要になったら、このページから何度でもコピーし直せるし、ファイルで保存もできるよ。同じSQLをもう一度実行しても壊れない作りだよ。ポスト・公式アカウント・ログイン状態がリロードで消えないようにする更新（写真の保存欄と、管理者がほかの人の公式申請も認証できるルール）が入っているので、前に実行したことがある人も、もう一度このSQLを実行してね。</p>' +
+    '<code class="config-code" data-supa-sql style="max-height:260px;overflow:auto"></code>' +
+    '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn-outline" data-supa-sql-copy>設定用SQLを コピー</button>' +
+    '<button type="button" class="btn-outline" data-supa-sql-download>設定用SQLを ファイルで保存</button></div>' +
+    '<p class="form-label" style="margin-top:20px">困ったときだけ：未確認アカウントを 管理者が手動で確認済みにするSQL</p>' +
+    '<p class="card-sub">普段は使わないでね。確認メール（Gmail）がどうしても届かず、本人だと管理者が直接確かめられたアカウントだけに使ってね。Supabaseの SQL Editor に貼って実行すると、未確認のアカウントがまとめて確認済みになって、パスワードでログインできるようになるよ。新しく登録する人は、メールの中のリンクを押して確認するのが通常の流れだよ。</p>' +
+    '<code class="config-code" data-supa-autoconfirm style="max-height:200px;overflow:auto"></code>' +
+    '<div style="margin-top:8px"><button type="button" class="btn-outline" data-supa-autoconfirm-copy>手動で確認済みにするSQLを コピー（困ったときだけ）</button></div>' +
+    '<p class="form-label" style="margin-top:20px">アカウントとデータを 全部消すSQL（消したら 元に戻せないよ）</p>' +
+    '<p class="card-sub">今あるアカウントを全部消して、最初から始めたいときだけ使ってね。Supabaseの SQL Editor に貼って実行すると、登録したアカウント・ポスト・コメント・スタンプ・フォロー・公式アカウントが全部消えるよ。消したあとは、このページのログイン画面から新しく登録してね。</p>' +
+    '<code class="config-code" data-supa-wipe style="max-height:200px;overflow:auto"></code>' +
+    '<div style="margin-top:8px"><button type="button" class="btn-outline" data-supa-wipe-copy>全部消すSQLを コピー</button></div>' +
+    '<ol class="steps">' +
+    '<li><span class="num">1</span><p>Project URL と Publishableキー（「P」の方）は、このページに組み込み済みで、接続は有効になっているよ。Secretキー（「S」の方）はページに入れていないよ。</p></li>' +
+    '<li><span class="num">2</span><p>上の「設定用SQL」をコピーして、Supabaseの SQL Editor に貼って実行してね（1回だけ）。プロフィール・ポスト・コメント・スタンプ・フォロー・公式アカウントのテーブルと、安全ルール（RLS）が作られるよ。貼った文字が消えてしまっても、実行済みなら大丈夫だよ（実行した内容はSupabaseに残っているよ）。心配なときは、上の「設定用SQLの状態」の表示を見てね。</p></li>' +
+    '<li><span class="num">3</span><p>確認メールを Gmail SMTP で送れるようにしてね（1回だけ）：Googleでアプリパスワード（16文字）を作り（2段階認証をオンにして myaccount.google.com で「アプリパスワード」を検索）、Supabaseの Authentication → Emails → SMTP Settings で Enable Custom SMTP をオンにして、Host：smtp.gmail.com／Port：587／Username：youzhenshengu54@gmail.com／Password：アプリパスワード／Sender email：youzhenshengu54@gmail.com／Sender name：K を入れて Save。続けて Authentication → Providers → Email の「Confirm email」をオンにして Save し、Authentication → URL Configuration の Site URL にこのページのURLを設定してね。設定後は、ログイン画面で登録すると Gmail 経由で確認メールが届き、リンクを押してからログインできるよ。</p></li>' +
+    '<li><span class="num">4</span><p>「まだ メールの確認が 終わっていないよ」と出るときは、そのアカウント宛の確認メールの中のリンクがまだ押されていないよ。迷惑メールフォルダを見て、ログイン画面の「確認メールを もう一度 送る」も試してね。それでも届かないときは、手順3のSMTP設定と Confirm email がオンかどうかを確かめてね。</p></li>' +
+    '<li><span class="num">5</span><p>アカウントを全部消して最初から始めたいときは、上の「全部消すSQL」を SQL Editor で実行してね（1回だけ）。アカウントもデータも全部消えて元に戻せないので、よく考えてから実行してね。</p></li>' +
+    "</ol></section>";
+}
+function setSupaMsg(text, ok) {
+  supabaseMsg = text; supabaseMsgOk = !!ok;
+  document.querySelectorAll("[data-supa-msg]").forEach(function (m) {
+    m.className = "msg " + (text ? (ok ? "ok" : "err") : "");
+    m.textContent = text || "";
+  });
+  document.querySelectorAll("[data-supa-url-status]").forEach(function (s) {
+    s.textContent = supabaseUrlDraft ? ("設定済み（" + supabaseUrlDraft + "）") : "まだ未設定（あとから設定できるよ）";
+  });
+}
+function bindSupabaseForms() {
+  document.querySelectorAll("[data-supa-form]").forEach(function (form) {
+    var slot = form.closest("[data-supabase-slot]");
+    if (!slot) return;
+    var urlInput = slot.querySelector("[data-supa-url]");
+    var codeEl = slot.querySelector("[data-supa-code]");
+    var msg = slot.querySelector("[data-supa-msg]");
+    urlInput.value = supabaseUrlDraft;
+    if (codeEl) codeEl.textContent = supaConfigText();
+    if (msg && supabaseMsg) { msg.className = "msg " + (supabaseMsgOk ? "ok" : "err"); msg.textContent = supabaseMsg; }
+    urlInput.addEventListener("input", function () {
+      supabaseUrlDraft = urlInput.value.trim();
+      document.querySelectorAll("[data-supa-code]").forEach(function (c) { c.textContent = supaConfigText(); });
+      document.querySelectorAll("[data-supa-url]").forEach(function (u) { if (u !== urlInput) u.value = supabaseUrlDraft; });
+    });
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      supabaseUrlDraft = urlInput.value.trim();
+      var url = supaBase();
+      if (!url) { setSupaMsg("Project URL を入れてね。Supabaseの Project Settings → API にあるよ。", false); return; }
+      if (url.indexOf("https://") !== 0) { setSupaMsg("URLは https:// で始まる形で入れてね。", false); return; }
+      setSupaMsg("接続を確認しているよ…", true);
+      fetch(url + "/rest/v1/profiles?select=id&limit=1", { headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: "Bearer " + SUPABASE_PUBLISHABLE_KEY } })
+        .then(function (r) {
+          if (r.ok) setSupaMsg("接続できたよ！このURLと Publishableキーで Supabaseにつながったよ。", true);
+          else setSupaMsg("Supabaseには届いたけど、確認できなかったよ（状態：" + r.status + "）。URLが合っているか見てみてね。", false);
+        })
+        .catch(function () { setSupaMsg("届かなかったよ。URLが合っているか、もう一度見てみてね。", false); });
+    });
+    var copyBtn = slot.querySelector("[data-supa-copy]");
+    if (copyBtn) copyBtn.addEventListener("click", function () {
+      var done = function () { setSupaMsg("設定コードをコピーしたよ。", true); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(supaConfigText()).then(done, function () { setSupaMsg("コピーできなかったよ。設定コードを長押しで選んでコピーしてね。", false); });
+      } else setSupaMsg("このブラウザでは自動コピーできないよ。設定コードを長押しで選んでコピーしてね。", false);
+    });
+    var sqlEl = slot.querySelector("[data-supa-sql]");
+    if (sqlEl) sqlEl.textContent = SUPABASE_SQL;
+    var sqlCopyBtn = slot.querySelector("[data-supa-sql-copy]");
+    if (sqlCopyBtn) sqlCopyBtn.addEventListener("click", function () {
+      var done = function () { setSupaMsg("設定用SQLをコピーしたよ。Supabaseの SQL Editor に貼って実行してね。", true); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(SUPABASE_SQL).then(done, function () { setSupaMsg("コピーできなかったよ。SQLを長押しで選んでコピーしてね。", false); });
+      } else setSupaMsg("このブラウザでは自動コピーできないよ。SQLを長押しで選んでコピーしてね。", false);
+    });
+    var sqlDlBtn = slot.querySelector("[data-supa-sql-download]");
+    if (sqlDlBtn) sqlDlBtn.addEventListener("click", function () {
+      try {
+        var blob = new Blob([SUPABASE_SQL], { type: "text/plain;charset=utf-8" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "k-setup.sql";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+        setSupaMsg("設定用SQLをファイルで保存したよ。SQL Editorの文字が消えても、このファイルから戻せるよ。", true);
+      } catch (e) {
+        setSupaMsg("保存できなかったよ。「設定用SQLをコピー」を使ってね。", false);
+      }
+    });
+    var statusEl = slot.querySelector("[data-supa-sql-status]");
+    if (statusEl && supaSqlStatusCache) {
+      if (supaSqlStatusCache.ok === 0 && supaSqlStatusCache.netErr) {
+        statusEl.textContent = "設定用SQLの状態を 確認できなかったよ（インターネットに届かなかったみたい）。つながっているときに このページを開き直すと、実行済みかどうか表示されるよ。SQLの文字が消えたときは、下からまたコピーできるよ。";
+      } else if (supaSqlStatusCache.ok === supaSqlStatusCache.total) {
+        statusEl.className = "notice-ok show";
+        statusEl.textContent = "設定用SQLは もう実行済みだよ（テーブルが " + supaSqlStatusCache.total + "つ全部 できているよ）。SQL Editorに貼った文字が消えていても、実行した内容はSupabaseに残っているから大丈夫だよ。";
+      } else {
+        statusEl.textContent = "まだできていないテーブルがあるよ（できているのは " + supaSqlStatusCache.ok + " / " + supaSqlStatusCache.total + "）。下の「設定用SQLをコピー」から、Supabaseの SQL Editor に貼って Run を押してね。貼った文字が消えたときは、またコピーし直せば大丈夫だよ。";
+      }
+    }
+    var acEl = slot.querySelector("[data-supa-autoconfirm]");
+    if (acEl) acEl.textContent = SUPABASE_AUTOCONFIRM_SQL;
+    var acCopyBtn = slot.querySelector("[data-supa-autoconfirm-copy]");
+    if (acCopyBtn) acCopyBtn.addEventListener("click", function () {
+      var done = function () { setSupaMsg("手動で確認済みにするSQLをコピーしたよ。困ったときだけ、Supabaseの SQL Editor に貼って実行してね。通常は確認メール（Gmail）の中のリンクで確認してね。", true); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(SUPABASE_AUTOCONFIRM_SQL).then(done, function () { setSupaMsg("コピーできなかったよ。SQLを長押しで選んでコピーしてね。", false); });
+      } else setSupaMsg("このブラウザでは自動コピーできないよ。SQLを長押しで選んでコピーしてね。", false);
+    });
+    var wipeEl = slot.querySelector("[data-supa-wipe]");
+    if (wipeEl) wipeEl.textContent = SUPABASE_WIPE_SQL;
+    var wipeCopyBtn = slot.querySelector("[data-supa-wipe-copy]");
+    if (wipeCopyBtn) wipeCopyBtn.addEventListener("click", function () {
+      var done = function () { setSupaMsg("全部消すSQLをコピーしたよ。Supabaseの SQL Editor に貼って実行すると、アカウントもデータも全部消えるよ。", true); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(SUPABASE_WIPE_SQL).then(done, function () { setSupaMsg("コピーできなかったよ。SQLを長押しで選んでコピーしてね。", false); });
+      } else setSupaMsg("このブラウザでは自動コピーできないよ。SQLを長押しで選んでコピーしてね。", false);
+    });
+  });
+  // One automatic connection check per page load, now that the URL is set.
+  if (!supaAutoChecked && supaBase()) {
+    supaAutoChecked = true;
+    fetch(supaBase() + "/rest/v1/profiles?select=id&limit=1", { headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: "Bearer " + SUPABASE_PUBLISHABLE_KEY } })
+      .then(function (r) { if (r.ok) setSupaMsg("接続できたよ！このURLと Publishableキーで Supabaseにつながっているよ。", true); })
+      .catch(function () { /* offline or blocked: the manual check button reports it */ });
+  }
+  checkSupaTables();
+}
+/* Check whether the setup SQL has actually been run: all six tables
+   must answer on the REST API. The SQL text pasted into the Supabase
+   SQL Editor disappears when the editor is reopened, but a completed
+   run stays in effect — this status line proves it either way. */
+var supaTablesChecked = false;
+var supaSqlStatusCache = null;
+function setSupaSqlStatus(okCount, total, netErr) {
+  supaSqlStatusCache = { ok: okCount, total: total, netErr: netErr || 0 };
+  document.querySelectorAll("[data-supa-sql-status]").forEach(function (el) {
+    if (okCount === 0 && netErr) {
+      el.className = "warn-box";
+      el.style.marginTop = "16px";
+      el.textContent = "設定用SQLの状態を 確認できなかったよ（インターネットに届かなかったみたい）。つながっているときに このページを開き直すと、実行済みかどうか表示されるよ。SQLの文字が消えたときは、下からまたコピーできるよ。";
+    } else if (okCount === total) {
+      el.className = "notice-ok show";
+      el.style.marginTop = "16px";
+      el.textContent = "設定用SQLは もう実行済みだよ（テーブルが " + total + "つ全部 できているよ）。SQL Editorに貼った文字が消えていても、実行した内容はSupabaseに残っているから大丈夫だよ。";
+    } else {
+      el.className = "warn-box";
+      el.style.marginTop = "16px";
+      el.textContent = "まだできていないテーブルがあるよ（できているのは " + okCount + " / " + total + "）。下の「設定用SQLをコピー」から、Supabaseの SQL Editor に貼って Run を押してね。貼った文字が消えたときは、またコピーし直せば大丈夫だよ。";
+    }
+  });
+}
+function checkSupaTables() {
+  if (supaTablesChecked || !supaBase()) return;
+  supaTablesChecked = true;
+  var tables = ["profiles", "posts", "comments", "reactions", "follows", "official_accounts"];
+  var headers = { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: "Bearer " + SUPABASE_PUBLISHABLE_KEY };
+  Promise.all(tables.map(function (t) {
+    return fetch(supaBase() + "/rest/v1/" + t + "?limit=1", { headers: headers })
+      .then(function (r) { return r.ok; })
+      .catch(function () { return null; });
+  })).then(function (results) {
+    var ok = 0, netErr = 0;
+    results.forEach(function (r) { if (r === true) ok++; else if (r === null) netErr++; });
+    setSupaSqlStatus(ok, tables.length, netErr);
+  });
+}
+function statsData() {
+  var mine = posts.filter(function (p) { return p.mine; });
+  var views = 0, reactions = 0, comments = 0, ai = 0, buzzed = 0;
+  mine.forEach(function (p) {
+    views += p.views; comments += p.comments.length; ai += p.aiReplies.length;
+    REACTIONS.forEach(function (r) { reactions += p.reactions[r.key] + (p.myReactions[r.key] ? 1 : 0); });
+    if (p.buzz >= 75) buzzed++;
+  });
+  var followingCount = 0, k;
+  for (k in followingOfficial) if (followingOfficial[k]) followingCount++;
+  for (k in followingSafe) if (followingSafe[k]) followingCount++;
+  return { postCount: mine.length, views: views, reactions: reactions, comments: comments, ai: ai, buzzed: buzzed, following: followingCount, totalPosts: posts.length };
+}
+function statsCardHtml() {
+  var s = statsData();
+  var items = [
+    { label: "ポスト", value: s.postCount }, { label: "閲覧 あわせて", value: s.views },
+    { label: "スタンプ あわせて", value: s.reactions }, { label: "コメント あわせて", value: s.comments },
+    { label: "AI返信 あわせて", value: s.ai }, { label: "バズった ポスト", value: s.buzzed }
+  ];
+  return '<section class="card" aria-label="じぶんの きろく"><h2>じぶんの きろく</h2>' +
+    '<p class="card-sub">ポストと、AIファンの おうえんだんが 広げた分を あわせた 数字だよ（数字は 10億まで かぞえるよ）</p>' +
+    '<dl class="stats-grid">' + items.map(function (it) {
+      return '<div class="stat-cell"><dd>' + fmt(it.value) + "</dd><dt>" + esc(it.label) + "</dt></div>";
+    }).join("") + "</dl></section>";
+}
+function missionsCardHtml() {
+  var done = missions.filter(function (m) { return m.done; }).length;
+  var allDone = missions.length > 0 && done === missions.length;
+  return '<section class="card" aria-label="きょうのバズミッション" style="position:relative;overflow:hidden">' +
+    (allDone ? confettiHtml(7) : "") +
+    '<div class="mission-head"><h2>きょうの バズミッション</h2><span class="mission-count">' + done + " / " + missions.length + ' クリア</span></div>' +
+    '<p class="card-sub">お題に あう ポストを したら、チェックを いれてね</p>' +
+    '<ul class="mission-list">' + missions.map(function (m) {
+      return '<li><button type="button" class="mission-btn' + (m.done ? " done" : "") + '" data-mission="' + m.id + '" aria-pressed="' + m.done + '" aria-label="ミッション：' + esc(m.topic) + '">' +
+        '<span class="mission-check" aria-hidden="true">' + (m.done ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5c4300" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>' : "") + '</span>' +
+        '<span class="m-topic">' + esc(m.topic) + "</span></button></li>";
+    }).join("") + "</ul>" +
+    (allDone ? '<p class="all-done">全部 クリア！ きょうは バズる日だね</p>' : "") + "</section>";
+}
+function statusChip(status) {
+  if (status === "approved") return '<span class="chip-status approved">認証済み</span>';
+  if (status === "rejected") return '<span class="chip-status rejected">認証されなかった</span>';
+  return '<span class="chip-status pending">審査中</span>';
+}
+function officialCardHtml() {
+  var listHtml;
+  if (!officialApps.length) {
+    listHtml = '<p class="card-sub" style="margin-top:12px">まだ 公式アカウントの申請はないよ。下のフォームで申し込んでみよう！</p>';
+  } else {
+    listHtml = '<ul class="off-list">' + officialApps.map(function (a) {
+      return '<li class="off-item">' + avatarHtml(a.shape, a.color, 40) +
+        '<div class="oi-main"><p class="oi-name" style="margin:0"><span class="nm">' + esc(a.name) + "</span>" +
+        (a.status === "approved" ? VERIFIED_SVG + '<span class="chip-official">公式</span>' : "") + statusChip(a.status) + "</p>" +
+        '<p class="oi-sub" style="margin:0">@' + esc(a.handle || a.name) + (a.category ? " · " + esc(a.category) : "") + (a.occupation ? " · " + esc(a.occupation) : "") + "</p>" +
+        (a.status === "pending" ? '<p class="oi-note" style="margin:0;color:var(--warn-ink)">審査中だよ。下の「審査」で認証されるまでポストできないよ</p>' : "") +
+        (a.status === "rejected" ? '<p class="oi-note" style="margin:0;color:var(--danger-ink)">今回は認証されなかったよ</p>' : "") +
+        (a.bio ? '<p class="oi-sub" style="margin:0">' + esc(a.bio) + "</p>" : "") +
+        ((a.location || a.hours) ? '<p class="oi-sub" style="margin:0;font-size:12px">' + (a.location ? "場所：" + esc(a.location) : "") + (a.location && a.hours ? " · " : "") + (a.hours ? "営業時間：" + esc(a.hours) : "") + "</p>" : "") +
+        "</div>" +
+        '<button type="button" class="btn-follow' + (followingOfficial["app:" + a.id] ? " following" : "") + '" data-follow-official="app:' + a.id + '" aria-pressed="' + !!followingOfficial["app:" + a.id] + '">' + (followingOfficial["app:" + a.id] ? "フォロー中" : "フォローする") + "</button>" +
+        '<button type="button" class="btn-del" data-del-official="' + a.id + '">けす</button></li>';
+    }).join("") + "</ul>";
+  }
+  var formHtml = "";
+  if (officialApps.length < 5) {
+    formHtml = '<form class="off-form" data-off-form novalidate>' +
+      '<p style="margin:0" class="form-label">公式アカウントの審査に申し込む</p>' +
+      '<div class="notice-ok" data-off-notice role="status"></div>' +
+      '<div style="margin-top:8px;display:flex;gap:12px;align-items:flex-start"><span data-off-avatar></span>' +
+      '<div class="stack" style="flex:1;min-width:0">' +
+      '<input class="field-input bold" data-off-name maxlength="20" placeholder="なまえ（20もじまで）れい：ほしぞら商店" aria-label="公式アカウントの なまえ" />' +
+      '<input class="field-input" data-off-bio maxlength="60" placeholder="しょうかい（60もじまで）れい：手作りお菓子のお店です" aria-label="公式アカウントの しょうかい" style="font-size:14px" />' +
+      '<input class="field-input" data-off-handle maxlength="15" placeholder="@ユーザー名（えい数字と_）れい：hoshizora_shop" aria-label="公式アカウントの ユーザー名" style="font-size:14px" />' +
+      '<input class="field-input" data-off-location maxlength="30" placeholder="場所（市や町まで）れい：ほしぞら市" aria-label="お店の 場所" style="font-size:14px" />' +
+      '<input class="field-input" data-off-hours maxlength="30" placeholder="営業時間 れい：9:00〜18:00（日よう日は お休み）" aria-label="お店の 営業時間" style="font-size:14px" />' +
+      "</div></div>" +
+      '<p class="form-label" style="margin-top:12px">職業・活動の種別を えらんでね（大まかな区分だけ。本名や自宅の住所は書かないでね）</p>' +
+      '<div class="picker-row" role="group" aria-label="職業・活動の種別をえらぶ" data-off-occupations></div>' +
+      '<p class="form-label" style="margin-top:12px">お店の 種類を えらんでね</p>' +
+      '<div class="picker-row" role="group" aria-label="公式アカウントのお店の種類をえらぶ" data-off-categories></div>' +
+      '<p class="form-label" style="margin-top:12px">マークを えらんでね</p>' +
+      '<div class="picker-row" role="group" aria-label="公式アカウントのマークをえらぶ" data-off-shapes></div>' +
+      '<p class="form-label" style="margin-top:12px">いろを えらんでね</p>' +
+      '<div class="picker-row" role="group" aria-label="公式アカウントのいろをえらぶ" data-off-colors></div>' +
+      '<div class="msg" data-off-msg role="alert"></div>' +
+      '<button type="submit" class="btn-submit" style="margin-top:16px;font-size:16px;padding:12px">審査に申し込む</button>' +
+      '<p class="form-foot" style="font-size:12px">申し込むと、この画面の「審査」にすぐ出るよ（メールは使わないよ）。本名（氏名）や自宅の住所は入れないでね。場所は「○○市」くらいまでが安全だよ</p>' +
+      "</form>";
+  }
+  var pendingApps = officialApps.filter(function (a) { return a.status === "pending"; });
+  var reviewHtml = "";
+  if (pendingApps.length && !isAdmin()) {
+    reviewHtml = '<div class="review-box"><h3>審査（管理者）</h3>' +
+      '<p class="card-sub" style="margin-top:4px">申請は管理者（youzhenshengu54@gmail.com に固定）の認証待ちだよ。審査・認証は管理者アカウントでログインしたときだけ、この欄にボタンが出るよ。メールは使わないよ。</p></div>';
+  }
+  if (pendingApps.length && isAdmin()) {
+    reviewHtml = '<div class="review-box"><h3>審査（管理者）</h3>' +
+      '<p class="card-sub" style="margin-top:4px">あなたは管理者（youzhenshengu54@gmail.com）としてログイン中だよ。メールは使わないよ。申請はここにすぐ出るから、この画面でそのまま認証できるよ。</p>' +
+      '<ul class="off-list">' + pendingApps.map(function (a) {
+        return '<li class="off-item">' + avatarHtml(a.shape, a.color, 40) +
+          '<div class="oi-main"><p class="oi-name" style="margin:0"><span class="nm">' + esc(a.name) + "</span></p>" +
+          '<p class="oi-sub" style="margin:0">@' + esc(a.handle || a.name) + (a.category ? " · " + esc(a.category) : "") + (a.occupation ? " · " + esc(a.occupation) : "") + "</p></div>" +
+          '<button type="button" class="btn-approve" data-approve-official="' + a.id + '">認証する</button>' +
+          '<button type="button" class="btn-reject" data-reject-official="' + a.id + '">見送る</button></li>';
+      }).join("") + "</ul></div>";
+  }
+  return '<section class="card" aria-label="公式アカウント"><h2>公式アカウント（審査つき） ' + VERIFIED_SVG + "</h2>" +
+    '<p class="card-sub">お店の人・有名人や活動している人・団体など、子供だけでなく大人も申請できるよ。まず下のフォームで審査に申し込んでね：アカウント名と @ユーザー名、種類、職業・活動の種別（大まかな区分だけ）、紹介文、場所（市町村まで）、営業時間を出すよ。申請はメールを使わず、この画面の「審査」にすぐ出るよ。管理者（youzhenshengu54@gmail.com に固定）がこの画面で「認証する」を押すと「認証済み」になってポストでき、その投稿はログイン中の全員が見られるよ。審査・認証できるのは管理者だけだよ。審査中・却下のアカウントではポストできないよ。5こまで申請できるよ。認証済みの公式アカウントのポストには、文章で返信コメントができるよ（返信にも禁止ワードチェックが必ずかかり、侮辱的な言葉の返信は送れないよ）。</p>' +
+    '<p class="warn-box">安全のため、申請では本名（氏名）や自宅の住所は絶対に入れないでね。聞かれることもないよ。場所は「○○市」くらいまでで十分だよ。</p>' +
+    listHtml + reviewHtml + formHtml + "</section>";
+}
+function profileFormHtml() {
+  return '<form class="card" data-profile-form novalidate aria-label="プロフィール">' +
+    '<h2 style="font-size:20px">プロフィールを かえる</h2>' +
+    '<div style="margin-top:20px;display:flex;gap:16px;align-items:center"><span data-pf-avatar></span>' +
+    '<div style="flex:1;min-width:0"><label class="form-label" for="pfNickname">ニックネーム（12もじまで）</label>' +
+    '<input id="pfNickname" class="field-input" data-pf-name maxlength="12" placeholder="れい：ゆうちゃん" aria-label="ニックネーム" style="font-size:18px;font-weight:700;margin-top:4px" /></div></div>' +
+    '<p class="form-label" style="margin-top:20px">マークを えらんでね</p>' +
+    '<div class="picker-row" role="group" aria-label="マークをえらぶ" data-pf-shapes></div>' +
+    '<p class="form-label" style="margin-top:20px">いろを えらんでね</p>' +
+    '<div class="picker-row" role="group" aria-label="いろをえらぶ" data-pf-colors></div>' +
+    '<div class="msg" data-pf-msg role="alert"></div>' +
+    '<button type="submit" class="btn-submit">これで ほぞん</button>' +
+    '<p class="form-foot">ほんとうの なまえや じゅうしょは かかないでね</p></form>';
+}
+
+/* ================= slot rendering ================= */
+var offDrafts = []; // per-form-instance drafts, rebuilt on each bind
+function fillSlot(el, htmlFn) {
+  try { el.innerHTML = htmlFn(); }
+  catch (e) { el.innerHTML = '<section class="card"><h2>このカードは 表示できなかったよ</h2><p class="card-sub">ページを 開き直すと 直ることが あるよ。ほかのカードは そのまま使えるよ。</p></section>'; }
+}
+function renderSlots() {
+  document.querySelectorAll("[data-stats-slot]").forEach(function (el) { fillSlot(el, statsCardHtml); });
+  document.querySelectorAll("[data-missions-slot]").forEach(function (el) { fillSlot(el, missionsCardHtml); });
+  document.querySelectorAll("[data-rules-slot]").forEach(function (el) { fillSlot(el, rulesCardHtml); });
+  document.querySelectorAll("[data-supabase-slot]").forEach(function (el) { fillSlot(el, supabaseCardHtml); });
+  document.querySelectorAll("[data-official-slot]").forEach(function (el) { fillSlot(el, officialCardHtml); });
+  document.querySelectorAll("[data-profileform-slot]").forEach(function (el) { fillSlot(el, profileFormHtml); });
+  safeRender(bindOfficialForms);
+  safeRender(bindProfileForms);
+  safeRender(bindSupabaseForms);
+}
+function renderAvatars() {
+  document.querySelectorAll(".avatar-slot").forEach(function (el) {
+    var size = parseInt(el.getAttribute("data-size"), 10) || 40;
+    var which = el.getAttribute("data-avatar");
+    if (which === "composer" && postAs > 0) {
+      var a = officialApps.filter(function (x) { return x.id === postAs; })[0];
+      if (a) { el.innerHTML = avatarHtml(a.shape, a.color, size); return; }
+    }
+    el.innerHTML = avatarHtml(profile.shape, profile.color, size);
+  });
+  document.querySelectorAll(".my-name").forEach(function (el) { el.textContent = profile.nickname; });
+  document.querySelectorAll(".my-handle").forEach(function (el) { el.textContent = "@" + profile.nickname; });
+}
+function renderProfileStats() {
+  var s = statsData();
+  $("profileStats").innerHTML =
+    "<span><strong>" + fmt(s.postCount) + "</strong> ポスト</span>" +
+    "<span><strong>" + fmt(s.views) + "</strong> 閲覧</span>" +
+    "<span><strong>" + fmt(s.reactions) + "</strong> スタンプ</span>" +
+    "<span><strong>" + fmt(s.ai) + "</strong> AI返信</span>" +
+    (officialApps.length ? "<span><strong>" + officialApps.length + "</strong> 公式アカウント</span>" : "") +
+    "<span><strong>" + fmt(s.following) + "</strong> フォロー中</span>";
+}
+
+/* ================= nav ================= */
+var NAV = [
+  { key: "home", label: "ホーム", icon: function (a) { return '<svg width="24" height="24" viewBox="0 0 24 24" fill="' + (a ? "currentColor" : "none") + '" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>'; } },
+  { key: "discover", label: "いろいろ", icon: function (a) { return '<svg width="24" height="24" viewBox="0 0 24 24" fill="' + (a ? "currentColor" : "none") + '" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>'; } },
+  { key: "safe", label: "Kあんぜんポスト", icon: function () { return SHIELD_SVG(24, "currentColor"); } },
+  { key: "missions", label: "ミッション", icon: function (a) { return '<svg width="24" height="24" viewBox="0 0 24 24" fill="' + (a ? "#f5b81d" : "none") + '" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>'; } }
+];
+var TABS = [
+  { key: "home", label: "ホーム" }, { key: "discover", label: "いろいろ" },
+  { key: "safe", label: "Kあんぜん" }, { key: "missions", label: "ミッション" }
+];
+function renderNav() {
+  $("sideNavBtns").innerHTML = NAV.map(function (n) {
+    return '<button type="button" class="nav-btn' + (view === n.key ? " active" : "") + '" data-nav="' + n.key + '" aria-label="' + n.label + '"' + (view === n.key ? ' aria-current="page"' : "") + ">" + n.icon(view === n.key) + '<span class="nav-label">' + n.label + "</span></button>";
+  }).join("");
+  $("tabBar").innerHTML = TABS.map(function (t) {
+    return '<button type="button" role="tab" class="tab-btn' + (view === t.key ? " active" : "") + '" data-nav="' + t.key + '" aria-selected="' + (view === t.key) + '" aria-label="' + t.label + '"><span>' + t.label + "</span></button>";
+  }).join("");
+  $("bottomNav").innerHTML = NAV.map(function (n) {
+    return '<button type="button" class="bn-btn' + (view === n.key ? " active" : "") + '" data-nav="' + n.key + '" aria-label="' + n.label + '"' + (view === n.key ? ' aria-current="page"' : "") + ">" + n.icon(view === n.key) + n.label + "</button>";
+  }).join("") + '<button type="button" class="bn-btn" id="bnProfile" aria-label="プロフィールを かえる"><span class="avatar-slot" data-avatar="me" data-size="24"></span>プロフィール</button>';
+  renderAvatars();
+}
+function setView(v) {
+  view = v;
+  ["home", "discover", "safe", "missions"].forEach(function (k) {
+    $("view-" + k).classList.toggle("hidden", k !== v);
+  });
+  renderNav();
+  window.scrollTo(0, 0);
+}
+function showProfileView() {
+  $("shellView").classList.add("hidden");
+  $("profileView").classList.remove("hidden");
+  renderSlots();
+  window.scrollTo(0, 0);
+}
+function hideProfileView() {
+  $("profileView").classList.add("hidden");
+  $("shellView").classList.remove("hidden");
+  renderAll();
+}
+
+/* ================= post rendering ================= */
+var openPickers = {}, openMenus = {}, confirmDeleteId = null;
+var replyDrafts = {}, replyErrors = {}; // official-account reply composer state, kept across re-renders
+function followBtnHtml(key, isFollowing, name) {
+  var f = !!isFollowing;
+  return '<button type="button" class="btn-follow' + (f ? " following" : "") + '" data-follow="' + esc(key) + '" aria-pressed="' + f + '" aria-label="' + (f ? esc(name) + "の フォローを やめる" : esc(name) + "を フォローする") + '">' + (f ? "フォロー中" : "フォローする") + "</button>";
+}
+function postHtml(p) {
+  var mood = null;
+  MOODS.forEach(function (m) { if (m.key === p.mood) mood = m; });
+  var hot = p.buzz >= 75;
+  var stampTotal = 0;
+  REACTIONS.forEach(function (r) { if (p.myReactions[r.key]) stampTotal++; });
+  var head =
+    '<div class="post-head"><span class="post-author">' + esc(p.name) + "</span>" +
+    (p.official && p.verified ? VERIFIED_SVG + '<span class="chip-verified">公式・認証済み</span><span class="chip-public">みんなが見られる</span>' : "") +
+    '<span class="post-handle">@' + esc(p.handle || p.name) + " · " + esc(p.timeLabel) + "</span>" +
+    (mood ? '<span class="chip-mood" style="background:' + mood.hex + '">' + esc(mood.label) + "</span>" : "") +
+    (p.mine ? '<span class="post-menu-wrap"><button type="button" class="menu-btn" data-menu="' + p.id + '" aria-label="そのほかの そうさ" aria-expanded="' + !!openMenus[p.id] + '"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>' +
+      (openMenus[p.id] ? '<span class="post-menu">' + (confirmDeleteId === p.id ?
+        '<p>ほんとに けす？</p><button type="button" class="danger" data-del-confirm="' + p.id + '">けす</button><button type="button" class="dim" data-del-cancel="1">やめる</button>' :
+        '<button type="button" data-del-ask="' + p.id + '">このポストを けす</button><button type="button" class="dim" data-report="' + p.id + '">つうほうする</button>') + "</span>" : "") + "</span>" : "") +
+    "</div>";
+  var shopMeta = "";
+  if (p.official && (p.category || p.location || p.hours)) {
+    shopMeta = '<p class="post-shopmeta">' + (p.category ? '<span class="cat">' + esc(p.category) + "</span>" : "") +
+      (p.location ? "<span>場所：" + esc(p.location) + "</span>" : "") + (p.hours ? "<span>営業時間：" + esc(p.hours) + "</span>" : "") + "</p>";
+  }
+  var followSlot = "";
+  if (p.official && p.followKey) followSlot = '<div class="follow-slot">' + followBtnHtml(p.followKey, followingOfficial[p.followKey], p.name) + "</div>";
+  var aiHtml = "";
+  if (p.aiReplies.length) {
+    aiHtml = '<div class="ai-replies">' + p.aiReplies.map(function (r) {
+      return '<div class="ai-reply"><span class="ai-avatar">' + shapeSvg("hoshi", 18, "#5c4300") + '</span><div style="min-width:0"><p class="ai-head" style="margin:0"><b>' + esc(r.label) + '</b><span class="chip-ai">AIの おうえん</span><span class="ai-team">バズる応援団</span></p><p class="ai-body" style="margin:0">' + esc(r.body) + '</p><p class="ai-foot" style="margin:0">AIが投稿内容を読んで作成した返信です（禁止ワードチェック済み）</p></div></div>';
+    }).join("") + "</div>";
+  }
+  var aiAction = "";
+  if (p.mine) {
+    if (p.aiBusy) aiAction = '<p class="ai-wait" style="border-radius:12px;background:var(--bg-hover);padding:10px 12px;font-size:14px">AIファンが へんしんを かんがえ中…</p>';
+    else if (p.aiReplies.length < 2) aiAction = '<p class="ai-wait">AIファンは 自動で へんしんするよ。少し まっててね</p>';
+    else aiAction = '<button type="button" class="btn-more-ai" data-more-ai="' + p.id + '">AIファンに もっと へんしんを もらう（いま ' + p.aiReplies.length + '件 / 最大10億件まで）</button>';
+  }
+  var commentsHtml = "";
+  if (p.comments.length) {
+    commentsHtml = '<ul class="phrase-list" aria-label="ひとこと">' + p.comments.map(function (c) {
+      return "<li>" + avatarHtml(profile.shape, profile.color, 22) + '<span class="phrase-bubble">' + esc(c.phrase) + "</span></li>";
+    }).join("") + "</ul>";
+  }
+  /* Official accounts accept free-text reply comments. Every reply is
+     checked with hasInsult + hasBanned before it is accepted: a reply
+     containing an insulting word can never be posted. */
+  var replyHtml = "";
+  if (p.official && p.verified) {
+    var rErr = replyErrors[p.id] || "";
+    replyHtml = '<div class="reply-section"><p class="rs-title">公式アカウントへの返信コメント</p>' +
+      '<p class="rs-note">この公式アカウントのポストには文章で返信できるよ。侮辱的な言葉や子供に適さない言葉が入った返信は、チェックで必ず止められて送れないよ。</p>' +
+      (p.replies.length ? '<ul class="reply-list">' + p.replies.map(function (r) {
+        return '<li class="reply-item">' + avatarHtml(r.shape, r.color, 28) + '<div style="min-width:0"><span class="r-head">' + esc(r.name) + ' <span>· ' + esc(r.timeLabel || "いま") + '</span></span><p class="r-body">' + esc(r.body) + "</p></div></li>";
+      }).join("") + "</ul>" : '<p class="rs-note" style="margin-top:8px">まだ返信コメントはないよ。最初の返信を書いてみよう。</p>') +
+      '<div class="reply-form"><label class="sr-only" for="replyInput-' + p.id + '">公式アカウントへの返信</label>' +
+      '<textarea class="reply-input" id="replyInput-' + p.id + '" data-reply-input="' + p.id + '" rows="2" maxlength="140" placeholder="返信コメントを書く（140もじまで）">' + esc(replyDrafts[p.id] || "") + '</textarea>' +
+      '<button type="button" class="btn-reply" data-reply-submit="' + p.id + '">返信する</button></div>' +
+      (rErr ? '<p class="msg err" role="alert">' + esc(rErr) + "</p>" : "") +
+      "</div>";
+  }
+  var actions =
+    '<div class="actions">' +
+    '<span class="act-btn" aria-label="閲覧回数 ' + fmt(p.views) + '回">' + EYE_SVG + "<b>" + fmt(p.views) + "</b></span>" +
+    '<button type="button" class="act-btn" data-picker="' + p.id + '" aria-label="ひとことを おくる" aria-expanded="' + !!openPickers[p.id] + '">' + CHAT_SVG + "<b>" + fmt(p.comments.length) + "</b></button>" +
+    REACTIONS.map(function (r) {
+      var active = !!p.myReactions[r.key];
+      var count = cap(p.reactions[r.key] + (active ? 1 : 0));
+      return '<button type="button" class="act-btn" data-reaction="' + r.key + '" data-post="' + p.id + '" aria-label="スタンプ：' + r.label + '" aria-pressed="' + active + '" style="color:' + (active ? r.color : "var(--dim)") + '">' + reactionSvg(r.key, 18, active ? r.color : "#8899a6") + "<b>" + fmt(count) + "</b></button>";
+    }).join("") + "</div>";
+  var picker = "";
+  if (openPickers[p.id]) {
+    picker = '<div class="picker"><p>やさしい ひとことを えらんでね</p><div class="phrases">' +
+      PHRASES.map(function (ph) { return '<button type="button" class="phrase-btn" data-phrase="' + esc(ph) + '" data-post="' + p.id + '" aria-label="ひとこと：' + esc(ph) + '">' + esc(ph) + "</button>"; }).join("") +
+      '</div><button type="button" class="close-link" data-picker-close="' + p.id + '">とじる</button></div>';
+  }
+  return '<article class="post" data-post-id="' + p.id + '"><div class="post-row">' + avatarHtml(p.shape, p.color, 40) +
+    '<div class="post-main">' + head + shopMeta + followSlot +
+    (p.body ? '<p class="post-body">' + esc(p.body) + "</p>" : "") +
+    (p.photo ? '<img class="photo" src="' + p.photo + '" alt="投稿した写真" />' : "") +
+    '<div class="buzz"><div class="buzz-track" role="progressbar" aria-label="バズり度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.floor(p.buzz) + '"><div class="buzz-fill' + (hot ? " hot" : "") + '" style="width:' + Math.min(100, p.buzz) + '%"></div></div><span class="buzz-label' + (hot ? " hot" : "") + '">バズり度 ' + buzzLabel(p.buzz) + "</span></div>" +
+    '<p class="post-counts">閲覧 ' + fmt(p.views) + "回 · スタンプ " + stampTotal + " · ひとこと " + fmt(p.comments.length) + " · AI返信 " + fmt(p.aiReplies.length) + " で けいさん中 · AIファンの おうえんだんが どんどん 広げてるよ（数字は 10億まで）</p>" +
+    aiHtml + aiAction + commentsHtml + replyHtml + actions + picker +
+    "</div></div></article>";
+}
+function renderTimeline() {
+  var visible = posts;
+  if (tlFilter === "following") visible = posts.filter(function (p) { return p.official && p.followKey && followingOfficial[p.followKey]; });
+  if (!posts.length) {
+    $("timeline").innerHTML = '<div class="empty-note"><p class="big">まだ ポストが ないよ</p><p>上の わくに きょうのことを かいて、さいしょの ポストを してみよう！</p></div>';
+    return;
+  }
+  if (!visible.length) {
+    $("timeline").innerHTML = '<div class="empty-note"><p class="big">フォロー中の アカウントの ポストは まだ ないよ</p><p>公式アカウントの ポストの「フォローする」を 押すと、ここに その アカウントの ポストだけ 集まるよ。「Kあんぜんポスト」の 博士や先生も フォローできるよ。</p></div>';
+    return;
+  }
+  $("timeline").innerHTML = visible.map(postHtml).join("");
+}
+
+/* ================= safe feed ================= */
+var safeState = { category: "all", query: "", savedOnly: false, followedOnly: false, liked: {}, saved: {}, comments: {}, views: {}, counted: {}, pickerId: null };
+function safeCardHtml(p) {
+  var liked = !!safeState.liked[p.id];
+  var saved = !!safeState.saved[p.id];
+  var following = !!followingSafe[p.handle];
+  var comments = safeState.comments[p.id] || [];
+  var picker = "";
+  if (safeState.pickerId === p.id) {
+    picker = '<div class="picker"><p>やさしい ひとことを えらんでね（この中だけで 見えるよ）</p><div class="phrases">' +
+      PHRASES.map(function (ph) { return '<button type="button" class="phrase-btn" data-safe-phrase="' + esc(ph) + '" data-safe-post="' + p.id + '" aria-label="ひとこと：' + esc(ph) + '">' + esc(ph) + "</button>"; }).join("") +
+      '</div><button type="button" class="close-link" data-safe-picker="' + p.id + '">とじる</button></div>';
+  }
+  return '<article class="post" data-safe-id="' + p.id + '"><div class="post-row">' + avatarHtml(p.shape, p.color, 40) +
+    '<div class="post-main"><div class="post-head"><span class="post-author">' + esc(p.name) + "</span>" + VERIFIED_SVG +
+    '<span class="post-handle">@' + esc(p.handle) + " · " + esc(p.time) + "</span>" +
+    '<span style="margin-left:auto">' + followBtnHtml("safe:" + p.handle, followingSafe[p.handle], p.name) + "</span></div>" +
+    '<p class="post-body">' + esc(p.body) + "</p>" +
+    '<p class="safe-check">' + SHIELD_SVG(15) + 'あんぜんチェック済み <span class="normal">（個人情報なし・やさしい言葉・広告なし）／ ' + esc(p.categoryLabel) + "</span></p>" +
+    (comments.length ? '<ul class="phrase-list">' + comments.map(function (c) { return '<li><span class="phrase-bubble">' + esc(c) + '</span><span class="phrase-who">じぶんの ひとこと</span></li>'; }).join("") + "</ul>" : "") +
+    '<div class="actions">' +
+    '<span class="act-btn" aria-label="じぶんが 見た回数 ' + (safeState.views[p.id] || 0) + '回">' + EYE_SVG + "<b>" + fmt(safeState.views[p.id] || 0) + "</b></span>" +
+    '<button type="button" class="act-btn" data-safe-picker="' + p.id + '" aria-label="「' + esc(p.name) + '」に ひとことを おくる" aria-expanded="' + (safeState.pickerId === p.id) + '">' + CHAT_SVG + "<b>" + comments.length + "</b></button>" +
+    '<button type="button" class="act-btn" data-safe-like="' + p.id + '" aria-label="「' + esc(p.name) + '」の ポストに いいね" aria-pressed="' + liked + '" style="color:' + (liked ? "#f91880" : "var(--dim)") + '">' + shapeSvg("heart", 18, liked ? "#f91880" : "#8899a6") + "<b>" + fmt(p.likes + (liked ? 1 : 0)) + "</b></button>" +
+    '<button type="button" class="act-btn" data-safe-save="' + p.id + '" aria-label="「' + esc(p.name) + '」の ポストを 保存する" aria-pressed="' + saved + '">' + bookmarkSvg(saved) + "<b>" + (saved ? "保存済み" : "保存") + "</b></button>" +
+    "</div>" + picker + "</div></div></article>";
+}
+function renderSafe() {
+  var q = safeState.query.trim();
+  var visible = SAFE_POSTS.filter(function (p) {
+    if (safeState.savedOnly && !safeState.saved[p.id]) return false;
+    if (safeState.followedOnly && !followingSafe[p.handle]) return false;
+    if (safeState.category !== "all" && p.category !== safeState.category) return false;
+    if (q && (p.name + " " + p.body + " " + p.categoryLabel).indexOf(q) === -1) return false;
+    return true;
+  });
+  var chips = SAFE_CATEGORIES.map(function (c) {
+    var active = safeState.category === c.key && !safeState.savedOnly && !safeState.followedOnly;
+    return '<button type="button" class="cat-chip" data-safe-cat="' + c.key + '" aria-label="カテゴリ：' + c.label + '" aria-pressed="' + active + '">' + c.label + "</button>";
+  }).join("") +
+    '<button type="button" class="cat-chip blue" data-safe-saved="1" aria-label="保存したポストだけ見る" aria-pressed="' + safeState.savedOnly + '">保存したもの</button>' +
+    '<button type="button" class="cat-chip blue" data-safe-followed="1" aria-label="フォロー中の人のポストだけ見る" aria-pressed="' + safeState.followedOnly + '">フォロー中</button>';
+  $("view-safe").innerHTML =
+    '<section aria-label="Kのあんぜんポスト"><div class="intro-block"><p class="ib-title">' + SHIELD_SVG(20) + 'お手本ポストに ついて</p>' +
+    "<p>下のポストは、子ども向けに作った「お手本ポスト」だよ。有名人や 本物のお店のポストではなく、このSNSのために作った 博士や先生の お手本だよ。ニュース・スポーツ・音楽・天気・かがく・どうぶつ・たべもの・せいかつ・アートのジャンルがあって、上のボタンでジャンルごとに絞れるよ。気に入った 博士や先生は「フォローする」で フォローできて、「フォロー中」のボタンで フォローした人のポストだけ見られるよ。目のマークの数字は、じぶんが そのポストを 見た回数だよ（開くたびに 1回ずつ かぞえるよ）。</p></div>" +
+    '<div class="search-block"><label class="sr-only" for="safeSearch">あんぜんポストを さがす</label>' +
+    '<input id="safeSearch" class="search-input" aria-label="あんぜんポストを さがす" placeholder="あんぜんポストを さがす" value="' + esc(safeState.query) + '" /><div class="chip-row" role="group" aria-label="カテゴリ">' + chips + "</div></div>" +
+    (visible.length ? visible.map(safeCardHtml).join("") :
+      '<p class="empty-note" style="font-weight:700;color:var(--dim)">' + (safeState.followedOnly ? "まだ だれも フォローして いないよ。ポストの「フォローする」を 押してみよう" : safeState.savedOnly ? "まだ 保存した ポストが ないよ。保存ボタンで あつめよう" : "見つからなかったよ。別の言葉で さがしてみてね") + "</p>") +
+    "</section>";
+  var si = $("safeSearch");
+  if (si) {
+    si.addEventListener("input", function () {
+      var pos = si.selectionStart;
+      safeState.query = si.value;
+      renderSafe();
+      var nsi = $("safeSearch");
+      if (nsi) { nsi.focus(); nsi.setSelectionRange(pos, pos); }
+    });
+  }
+  // count a view once per post per render of the safe view
+  visible.forEach(function (p) {
+    if (!safeState.counted[p.id]) { safeState.counted[p.id] = true; safeState.views[p.id] = cap((safeState.views[p.id] || 0) + 1); }
+  });
+}
+
+/* ================= discover ================= */
+var quizPicked = {};
+function renderDiscover() {
+  var photoPosts = posts.filter(function (p) { return p.photo; });
+  var genres = ["news", "sports", "music", "weather", "food", "animals"];
+  var pickup = [];
+  genres.forEach(function (g) {
+    for (var i = 0; i < SAFE_POSTS.length; i++) if (SAFE_POSTS[i].category === g) { pickup.push(SAFE_POSTS[i]); break; }
+  });
+  var html = '<section aria-label="いろいろ"><div class="intro-block"><p class="ib-title">いろいろ あつめたよ</p><p>写真・クイズ・お手本ポストなど、このSNSで見られるものを全部ここに集めたよ。</p></div>';
+  html += '<div class="block-pad"><h3>しゃしんポスト</h3>';
+  if (!photoPosts.length) html += '<p class="sub">まだ写真つきポストがないよ。ホームの「ポストする」で写真を1まい つけて投稿すると、ここに集まるよ。</p>';
+  else html += '<div class="photo-grid">' + photoPosts.map(function (p) {
+    return '<figure><img src="' + p.photo + '" alt="投稿した写真' + (p.body ? "：" + esc(p.body) : "") + '" loading="lazy" />' + (p.body ? "<figcaption>" + esc(p.body) + "</figcaption>" : "") + "</figure>";
+  }).join("") + "</div>";
+  html += "</div>";
+  html += '<div class="intro-block"><p class="ib-title">まいにちクイズ</p><p>答えをタップすると、すぐ せいかいが分かるよ。</p></div>';
+  html += QUIZZES.map(function (q) {
+    var picked = quizPicked[q.id];
+    return '<article class="quiz"><p class="quiz-q"><span class="chip-quiz">クイズ</span>' + esc(q.question) + '</p><div class="quiz-choices" role="group" aria-label="クイズ：' + esc(q.question) + '">' +
+      q.choices.map(function (c, i) {
+        var cls = "quiz-choice";
+        if (picked != null) {
+          if (i === q.answer) cls += " right";
+          else if (i === picked) cls += " wrong";
+          else cls += " faded";
+        }
+        return '<button type="button" class="' + cls + '" data-quiz="' + q.id + '" data-choice="' + i + '" aria-label="クイズの答え：' + esc(c) + '" aria-pressed="' + (picked === i) + '">' + esc(c) + (picked != null && i === q.answer ? " ← せいかい！" : "") + (picked != null && picked === i && i !== q.answer ? " ← おしい！" : "") + "</button>";
+      }).join("") + "</div>" +
+      (picked != null ? '<p class="quiz-explain">' + (picked === q.answer ? "せいかい！ " : "こたえは「" + esc(q.choices[q.answer]) + "」。 ") + esc(q.explain) + "</p>" : "") + "</article>";
+  }).join("");
+  html += '<div class="intro-block"><p class="ib-title">お手本ポスト ピックアップ</p><p>ニュース・スポーツ・音楽・天気・たべもの・どうぶつなど、いろんなジャンルから少しずつ。全部は「Kあんぜんポスト」で、ジャンルを絞って見れるよ。</p></div>';
+  html += pickup.map(function (p) {
+    return '<article class="post"><div class="post-row">' + avatarHtml(p.shape, p.color, 40) +
+      '<div class="post-main"><div class="post-head"><span class="post-author">' + esc(p.name) + "</span>" + VERIFIED_SVG +
+      '<span class="post-handle">@' + esc(p.handle) + " · " + esc(p.categoryLabel) + '</span></div><p class="post-body">' + esc(p.body) + "</p></div></div></article>";
+  }).join("");
+  html += "</section>";
+  $("view-discover").innerHTML = html;
+}
+
+/* ================= composer ================= */
+var mood = "", photoUrl = null;
+function renderMoods() {
+  $("moodRow").innerHTML = MOODS.map(function (m) {
+    return '<button type="button" class="mood-chip" data-mood="' + m.key + '" aria-label="きもち：' + m.label + '" aria-pressed="' + (mood === m.key) + '" style="background:' + m.hex + '">' + m.label + "</button>";
+  }).join("");
+}
+function renderPostAs() {
+  var pw = $("pendingWarn");
+  if (pw) pw.classList.toggle("hidden", !officialApps.some(function (a) { return a.status === "pending"; }));
+  var approved = officialApps.filter(function (a) { return a.status === "approved"; });
+  var row = $("postAsRow");
+  if (!approved.length) { row.className = "postas"; row.innerHTML = ""; $("templatesRow").className = "templates"; $("templatesRow").innerHTML = ""; return; }
+  row.className = "postas show";
+  row.innerHTML = '<span class="pa-label">だれで ポストする？</span>' +
+    '<button type="button" class="postas-btn" data-postas="0" aria-label="じぶんで ポストする" aria-pressed="' + (postAs === 0) + '">' + avatarHtml(profile.shape, profile.color, 18) + "じぶん</button>" +
+    approved.map(function (a) {
+      return '<button type="button" class="postas-btn" data-postas="' + a.id + '" aria-label="' + esc(a.name) + '（公式・認証済み）で ポストする" aria-pressed="' + (postAs === a.id) + '">' + avatarHtml(a.shape, a.color, 18) + esc(a.name) + '<span class="chip-official">公式</span></button>';
+    }).join("");
+  var tpl = $("templatesRow");
+  if (postAs > 0) {
+    tpl.className = "templates show";
+    tpl.innerHTML = '<span class="pa-label">お店の お知らせ型：</span>' + SHOP_TEMPLATES.map(function (t, i) {
+      return '<button type="button" class="tpl-btn" data-tpl="' + i + '" aria-label="テンプレート：' + t.label + '">' + t.label + "</button>";
+    }).join("");
+  } else { tpl.className = "templates"; tpl.innerHTML = ""; }
+  renderAvatars();
+}
+function updateComposer() {
+  var len = $("composerText").value.length;
+  $("charCount").textContent = len + " / 140";
+  $("postBtn").disabled = !$("composerText").value.trim() && !photoUrl;
+}
+function doPost() {
+  var text = $("composerText").value.trim();
+  var msg = $("postMsg");
+  msg.className = "msg"; msg.textContent = "";
+  if (!text && !photoUrl) return;
+  if (hasBanned(text)) { msg.className = "msg err"; msg.textContent = BANNED_MSG; return; }
+  var author = { authorKind: "me", name: profile.nickname, handle: "", shape: profile.shape, color: profile.color };
+  if (postAs > 0) {
+    var a = officialApps.filter(function (x) { return x.id === postAs; })[0];
+    if (a) author = { authorKind: "official", name: a.name, handle: a.handle, shape: a.shape, color: a.color, official: true, verified: true, category: a.category, location: a.location, hours: a.hours, followKey: "app:" + a.id };
+  }
+  author.body = text; author.mood = mood; author.photo = photoUrl; author.views = 3; author.buzz = 4; author.mine = true; author.timeLabel = "いま";
+  var p = newPost(author);
+  posts.unshift(p);
+  saveRemotePost(p); /* kept in Supabase so the post survives a reload */
+  $("composerText").value = ""; mood = ""; photoUrl = null;
+  $("photoInput").value = ""; $("photoPreview").style.display = "none";
+  renderMoods(); updateComposer(); setView("home"); tlFilter = "all"; syncTlFilter();
+  renderAll();
+  var cc = $("composerConfetti");
+  cc.innerHTML = confettiHtml(3);
+  setTimeout(function () { cc.innerHTML = ""; }, 2600);
+  // AI fans reply automatically: 2 replies, one after another
+  var n = 0;
+  p.aiBusy = true;
+  var iv = setInterval(function () {
+    pushSafeAiReply(p); /* banned-word checked: AI never says a banned word */
+    p.views = cap(p.views + 15 + Math.floor(Math.random() * 40));
+    n++;
+    if (n >= 2) { p.aiBusy = false; clearInterval(iv); }
+    renderAll();
+  }, 1400);
+}
+function syncTlFilter() {
+  $("tlAll").setAttribute("aria-pressed", tlFilter === "all" ? "true" : "false");
+  $("tlFollowing").setAttribute("aria-pressed", tlFilter === "following" ? "true" : "false");
+}
+
+/* ================= official & profile form binders ================= */
+function chipGroupHtml(items, current, kind) {
+  return items.map(function (it) {
+    var label = it.label || it;
+    var key = it.key || it;
+    return '<button type="button" class="chip-pick" data-chip="' + kind + '" data-value="' + esc(key) + '" aria-label="' + esc(kind === "occupation" ? "職業・活動の種別" : "お店の種類") + "：" + esc(label) + '" aria-pressed="' + (current === key) + '">' + esc(label) + "</button>";
+  }).join("");
+}
+function shapeGroupHtml(current, small) {
+  return SHAPES.map(function (s) {
+    return '<button type="button" class="shape-pick' + (small ? " sm" : "") + '" data-chip="shape" data-value="' + s.key + '" aria-label="マーク：' + s.label + '" aria-pressed="' + (current === s.key) + '">' + shapeSvg(s.key, small ? 22 : 28, current === s.key ? "#ffffff" : "#1d9bf0") + "</button>";
+  }).join("");
+}
+function colorGroupHtml(current, small) {
+  return COLORS.map(function (c) {
+    return '<button type="button" class="color-pick' + (small ? " sm" : "") + '" data-chip="color" data-value="' + c.key + '" aria-label="いろ：' + c.label + '" aria-pressed="' + (current === c.key) + '" style="background:' + c.hex + '"></button>';
+  }).join("");
+}
+var offDraftStore = [];
+function bindOfficialForms() {
+  offDrafts = [];
+  document.querySelectorAll("[data-off-form]").forEach(function (form, idx) {
+    var draft = offDraftStore[idx];
+    if (!draft) {
+      draft = { name: "", bio: "", handle: "", location: "", hours: "", occupation: "おみせ", category: "おみせ・スーパー", shape: "hoshi", color: "sun" };
+      offDraftStore[idx] = draft;
+    }
+    offDrafts.push(draft);
+    var slot = form.closest("[data-official-slot]");
+    function saveFields() {
+      draft.name = slot.querySelector("[data-off-name]").value;
+      draft.bio = slot.querySelector("[data-off-bio]").value;
+      draft.handle = slot.querySelector("[data-off-handle]").value;
+      draft.location = slot.querySelector("[data-off-location]").value;
+      draft.hours = slot.querySelector("[data-off-hours]").value;
+    }
+    function refresh() {
+      slot.querySelector("[data-off-avatar]").innerHTML = avatarHtml(draft.shape, draft.color, 48);
+      slot.querySelector("[data-off-occupations]").innerHTML = chipGroupHtml(OCCUPATION_TYPES, draft.occupation, "occupation");
+      slot.querySelector("[data-off-categories]").innerHTML = chipGroupHtml(OFFICIAL_CATEGORIES, draft.category, "category");
+      slot.querySelector("[data-off-shapes]").innerHTML = shapeGroupHtml(draft.shape, true);
+      slot.querySelector("[data-off-colors]").innerHTML = colorGroupHtml(draft.color, true);
+      slot.querySelector("[data-off-name]").value = draft.name;
+      slot.querySelector("[data-off-bio]").value = draft.bio;
+      slot.querySelector("[data-off-handle]").value = draft.handle;
+      slot.querySelector("[data-off-location]").value = draft.location;
+      slot.querySelector("[data-off-hours]").value = draft.hours;
+    }
+    form.addEventListener("input", saveFields);
+    form.addEventListener("click", function (e) {
+      var chip = e.target.closest ? e.target.closest("[data-chip]") : null;
+      if (!chip) return;
+      draft[chip.getAttribute("data-chip")] = chip.getAttribute("data-value");
+      refresh();
+    });
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      draft.name = slot.querySelector("[data-off-name]").value.trim();
+      draft.bio = slot.querySelector("[data-off-bio]").value.trim();
+      draft.handle = slot.querySelector("[data-off-handle]").value.trim().replace(/^@+/, "");
+      draft.location = slot.querySelector("[data-off-location]").value.trim();
+      draft.hours = slot.querySelector("[data-off-hours]").value.trim();
+      var msg = slot.querySelector("[data-off-msg]");
+      msg.className = "msg"; msg.textContent = "";
+      if (!draft.name) { msg.className = "msg err"; msg.textContent = "なまえを 入れてね。"; return; }
+      var fields = [draft.name, draft.bio, draft.handle, draft.location, draft.hours];
+      for (var i = 0; i < fields.length; i++) {
+        if (hasBanned(fields[i])) { msg.className = "msg err"; msg.textContent = BANNED_MSG; return; }
+      }
+      var newApp = { id: ++uid, name: draft.name.trim(), bio: draft.bio.trim(), handle: draft.handle.trim().replace(/^@+/, ""), location: draft.location.trim(), hours: draft.hours.trim(), occupation: draft.occupation, category: draft.category, shape: draft.shape, color: draft.color, status: "pending" };
+      officialApps.push(newApp);
+      saveRemoteOfficial(newApp); /* kept in Supabase so the application survives a reload */
+      offDraftStore.forEach(function (d) { d.name = ""; d.bio = ""; d.handle = ""; d.location = ""; d.hours = ""; d.occupation = "おみせ"; d.category = "おみせ・スーパー"; d.shape = "hoshi"; d.color = "sun"; });
+      renderAll();
+      document.querySelectorAll("[data-off-notice]").forEach(function (n) {
+        n.className = "notice-ok show";
+        n.textContent = "申請を送ったよ！この画面の「審査」にすぐ出ているよ（メールは使わないよ）。管理者がこの画面で「認証する」を押すと、公式アカウントでポストできて、その投稿はログイン中の全員が見られるようになるよ。";
+      });
+    });
+    refresh();
+  });
+}
+function bindProfileForms() {
+  document.querySelectorAll("[data-profile-form]").forEach(function (form) {
+    var slot = form.closest("[data-profileform-slot]");
+    var draft = { nickname: profile.nickname, shape: profile.shape, color: profile.color };
+    var nameInput = slot.querySelector("[data-pf-name]");
+    nameInput.value = profile.nickname;
+    function refresh() {
+      slot.querySelector("[data-pf-avatar]").innerHTML = avatarHtml(draft.shape, draft.color, 80);
+      slot.querySelector("[data-pf-shapes]").innerHTML = shapeGroupHtml(draft.shape, false);
+      slot.querySelector("[data-pf-colors]").innerHTML = colorGroupHtml(draft.color, false);
+    }
+    form.addEventListener("click", function (e) {
+      var chip = e.target.closest ? e.target.closest("[data-chip]") : null;
+      if (!chip) return;
+      draft[chip.getAttribute("data-chip")] = chip.getAttribute("data-value");
+      refresh();
+    });
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var v = nameInput.value.trim();
+      var msg = slot.querySelector("[data-pf-msg]");
+      msg.className = "msg"; msg.textContent = "";
+      if (!v) { msg.className = "msg err"; msg.textContent = "ニックネームを 入れてね。"; return; }
+      if (hasBanned(v)) { msg.className = "msg err"; msg.textContent = BANNED_MSG; return; }
+      var oldName = profile.nickname;
+      profile = { nickname: v, shape: draft.shape, color: draft.color };
+      /* Save to THIS account only: its profiles row and its auth
+         metadata, so the new name follows this account to any
+         device and never leaks into anyone else's account. */
+      saveRemoteProfile();
+      if (authAccessToken) {
+        supaAuthFetch("/auth/v1/user", { data: { nickname: v, shape: draft.shape, color: draft.color }, __method: "PUT" }, authAccessToken).catch(function () {});
+      }
+      posts.forEach(function (p) { if (p.mine && p.authorKind === "me") { p.name = v; p.shape = draft.shape; p.color = draft.color; } });
+      if (oldName !== v) { /* handles follow nickname automatically */ }
+      hideProfileView();
+    });
+    refresh();
+  });
+}
+
+/* ================= auth (login / register / forgot) =================
+   Email + password auth against Supabase Auth with the Publishable
+   key. Confirmation email is ON for this project (Supabase:
+   Authentication -> Providers -> Email -> "Confirm email" on), and
+   the mail is sent through Gmail connected as Custom SMTP
+   (Authentication -> Emails -> SMTP Settings: smtp.gmail.com),
+   because Supabase's built-in sender is limited to 2 emails/hour
+   to project members only and cannot reach everyone. Signup
+   therefore returns NO session: the account must click the link
+   in the confirmation email first (the link lands back on this
+   page and handleAuthFragment logs the account in). The register
+   handler explains that and offers the resend button. Login uses
+   the password grant directly; an unconfirmed account gets the
+   email_not_confirmed error, which also offers resend. Password
+   reset uses Supabase's recover email (also sent via Gmail SMTP);
+   when its link lands back on this page (URL fragment with
+   type=recovery), the new-password form below completes it. */
+var authMode = "login"; // login | register | forgot | resetpw
+var authBusy = false;
+var loggedInEmail = "";
+var authAccessToken = "";
+var recoveryToken = "";
+var authCanResend = false;
+function setAuthMsg(text, ok) {
+  var el = $("authMsg");
+  if (!el) return;
+  el.className = "msg" + (text ? (ok ? " ok" : " err") : "");
+  el.textContent = text || "";
+}
+function setAuthNotice(text) {
+  var n = $("authNotice");
+  if (!n) return;
+  n.className = "notice-ok" + (text ? " show" : "");
+  n.textContent = text || "";
+}
+function renderAuth() {
+  var titles = { login: "ログイン", register: "あたらしく 登録", forgot: "パスワードを 忘れたとき", resetpw: "新しい パスワード" };
+  var descs = {
+    login: "登録した メールアドレスと パスワードを 入れると ログインできるよ。",
+    register: "メールアドレスと パスワードと、あなたの ニックネームを 決めてね。ニックネームは アカウントごとに 別々で、ほかの人と 同じには ならないよ。登録すると、そのメールアドレスに 確認メール（Gmailから送信）が 届くよ。メールの中の リンクを 押してから ログインしてね。",
+    forgot: "登録した メールアドレスを 入れてね。パスワード再設定の メールを 送るよ。メールの中の リンクを 開くと、新しい パスワードに 変えられるよ。",
+    resetpw: "新しい パスワードを 決めてね。決めたら そのまま ログインするよ。"
+  };
+  var labels = { login: "ログインする", register: "登録する", forgot: "再設定メールを 送る", resetpw: "新しいパスワードに する" };
+  $("authTitle").textContent = titles[authMode];
+  $("authDesc").textContent = descs[authMode];
+  $("authForgotNote").classList.toggle("hidden", authMode !== "forgot");
+  $("authEmailWrap").classList.toggle("hidden", authMode === "resetpw");
+  $("authNicknameWrap").classList.toggle("hidden", authMode !== "register");
+  $("authPasswordWrap").classList.toggle("hidden", authMode === "forgot" || authMode === "resetpw");
+  $("authNewPwWrap").classList.toggle("hidden", authMode !== "resetpw");
+  $("authForgotLink").classList.toggle("hidden", authMode !== "login");
+  $("authPassword").setAttribute("autocomplete", authMode === "register" ? "new-password" : "current-password");
+  $("authSubmitBtn").textContent = authBusy ? "処理しているよ…" : labels[authMode];
+  $("authSubmitBtn").disabled = authBusy;
+  var noConfirmNote = $("authNoConfirmNote");
+  if (noConfirmNote) noConfirmNote.classList.toggle("hidden", authMode !== "register");
+  // Confirmation email is on (sent via Gmail SMTP): show the resend row
+  // whenever a confirmation email may need sending again — after a
+  // signup, or when a login failed because the account is not
+  // confirmed yet (authCanResend is set in those handlers).
+  $("authResendRow").classList.toggle("hidden", !authCanResend);
+  $("authResendBtn").disabled = authBusy;
+  $("authSwitchBtn").textContent = authMode === "login" ? "はじめての人は こちら（登録する）" : "ログインに もどる";
+}
+function switchAuthMode(next) {
+  authMode = next;
+  if (next !== "resetpw") recoveryToken = "";
+  authCanResend = false;
+  setAuthMsg("");
+  setAuthNotice("");
+  $("authNewPassword").value = ""; $("authNewPassword2").value = "";
+  renderAuth();
+}
+function showAuthView() {
+  $("shellView").classList.add("hidden");
+  $("profileView").classList.add("hidden");
+  $("authView").classList.remove("hidden");
+  renderAuth();
+  window.scrollTo(0, 0);
+}
+function hideAuthView() {
+  /* Show the shell FIRST and render afterwards: even if a render
+     step fails, the user lands on the app frame — never on a blank
+     white page with the login gone and nothing in its place. */
+  $("authView").classList.add("hidden");
+  $("profileView").classList.add("hidden");
+  $("shellView").classList.remove("hidden");
+  renderAll();
+}
+function updateAuthHeader() {
+  var btn = $("authBtn");
+  var adminLine = $("adminLine");
+  if (loggedInEmail) {
+    btn.textContent = "ログアウト";
+    var line = $("authEmailLine");
+    line.textContent = "ログイン中： " + loggedInEmail + "（このメアド専用の プロフィールと ポストだよ）" + (isAdmin() ? " ・ 管理者" : "");
+    line.classList.remove("hidden");
+    if (adminLine) adminLine.classList.toggle("hidden", !isAdmin());
+  } else {
+    btn.textContent = "ログイン";
+    $("authEmailLine").classList.add("hidden");
+    if (adminLine) adminLine.classList.add("hidden");
+  }
+}
+function supaAuthFetch(path, body, accessToken) {
+  var headers = { apikey: SUPABASE_PUBLISHABLE_KEY, "Content-Type": "application/json" };
+  if (accessToken) headers.Authorization = "Bearer " + accessToken;
+  else headers.Authorization = "Bearer " + SUPABASE_PUBLISHABLE_KEY;
+  var method = "POST";
+  if (body && body.__method) { method = body.__method; delete body.__method; }
+  return fetch(supaBase() + path, { method: method, headers: headers, body: (method === "GET" || method === "HEAD") ? undefined : (body ? JSON.stringify(body) : undefined) })
+    .then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (data) { return { ok: r.ok, status: r.status, data: data }; });
+    });
+}
+var URL_NOT_SET_MSG = "Supabaseの Project URL が まだ設定されていないよ。ミッション画面の「みんなで使う設定（Supabase）」で URL を入れると、メールログインが 使えるように なるよ。";
+/* Translate a Supabase Auth error into a kid-friendly message, and
+   flag when the fix is "resend the confirmation email". */
+function authErrorInfo(res) {
+  var d = (res && res.data) || {};
+  var code = d.error_code || d.code || "";
+  var msg = d.msg || d.error_description || d.message || "";
+  var status = res ? res.status : 0;
+  if (status === 429 || code === "over_email_send_rate_limit" || /rate limit/i.test(msg)) return { text: "メールを 送る回数が 多すぎるよ。少し 時間を おいてから、もう一度 ためしてね", resend: false };
+  if (code === "email_not_confirmed" || /email not confirmed/i.test(msg)) return { text: "このアカウントは まだ メールの確認が 終わっていないよ。登録したときに届いた 確認メール（Gmailから送信）の中の リンクを 押してね。メールが見つからないときは、迷惑メールフォルダを見て、下の「確認メールを もう一度 送る」も使ってね", resend: true };
+  if (code === "invalid_credentials" || /invalid login credentials/i.test(msg)) return { text: "メールアドレスか パスワードが ちがうよ。たしかめて もう一度 ためしてね", resend: false };
+  if (code === "user_already_exists" || /already registered/i.test(msg)) return { text: "その メールアドレスは もう登録されているよ。「ログインに もどる」から ログインしてね", resend: false };
+  if (code === "weak_password" || /weak password/i.test(msg)) return { text: "パスワードが かんたんすぎるよ。もう少し 長くて 強い パスワードにしてね", resend: false };
+  if (code === "email_address_invalid" || code === "validation_failed" || /invalid.*email|email.*invalid/i.test(msg)) return { text: "メールアドレスの 形が ちがうみたい。たしかめてね", resend: false };
+  return { text: "できなかったよ。少し 時間を おいて もう一度 ためしてね（状態：" + status + "）", resend: false };
+}
+/* ================= per-account profile =================
+   Every account has its OWN profile. The nickname is resolved at
+   login in this order: (1) the account's saved row in the Supabase
+   profiles table, (2) the nickname stored in the account's signup
+   metadata, (3) a name derived from that account's own email
+   address. It is never a fixed name shared by everyone, and saving
+   the profile writes it back to that account's own row + metadata,
+   so the same person keeps their name on any device and different
+   people never collapse into one name. */
+function isValidShape(k) { return SHAPES.some(function (s) { return s.key === k; }); }
+function isValidColor(k) { return COLORS.some(function (c) { return c.key === k; }); }
+function nicknameFromEmail(email) {
+  var local = String(email || "").split("@")[0] || "";
+  local = local.replace(/[._\-+]+/g, " ").replace(/\s+/g, " ").trim();
+  if (local && hasBanned(local)) local = local.replace(/[0-9０-９]+/g, "").replace(/\s+/g, " ").trim();
+  if (!local || hasBanned(local)) local = "ともだち";
+  return local.slice(0, 12);
+}
+function applyAccountProfile(user, email) {
+  var meta = (user && user.user_metadata) || {};
+  var nick = String(meta.nickname || "").trim();
+  if (!nick || hasBanned(nick)) nick = nicknameFromEmail(email || (user && user.email) || "");
+  profile = {
+    nickname: nick.slice(0, 12) || "ニックネーム",
+    shape: isValidShape(meta.shape) ? meta.shape : "heart",
+    color: isValidColor(meta.color) ? meta.color : "sky"
+  };
+  currentUserId = (user && user.id) || "";
+}
+function saveRemoteProfile() {
+  if (!currentUserId || !authAccessToken || !supaBase()) return;
+  fetch(supaBase() + "/rest/v1/profiles?on_conflict=id", {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_PUBLISHABLE_KEY,
+      Authorization: "Bearer " + authAccessToken,
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates,return=minimal"
+    },
+    body: JSON.stringify({ id: currentUserId, nickname: profile.nickname, shape: profile.shape, color: profile.color })
+  }).catch(function () { /* offline: the metadata copy still holds the name */ });
+}
+function loadRemoteProfile() {
+  if (!currentUserId || !authAccessToken || !supaBase()) return;
+  fetch(supaBase() + "/rest/v1/profiles?id=eq." + encodeURIComponent(currentUserId) + "&select=nickname,shape,color", {
+    headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: "Bearer " + authAccessToken }
+  }).then(function (r) { return r.ok ? r.json() : null; }).then(function (rows) {
+    if (!loggedInEmail) return; /* logged out again meanwhile */
+    if (rows && rows.length && rows[0] && rows[0].nickname && !hasBanned(String(rows[0].nickname))) {
+      profile = {
+        nickname: String(rows[0].nickname).slice(0, 12),
+        shape: isValidShape(rows[0].shape) ? rows[0].shape : profile.shape,
+        color: isValidColor(rows[0].color) ? rows[0].color : profile.color
+      };
+      renderAll();
+    } else {
+      /* First login for this account: save its own profile row so
+         the name follows this account, not anyone else's. */
+      saveRemoteProfile();
+    }
+  }).catch(function () { /* keep the metadata/email-derived profile */ });
+}
+/* ================= session persistence =================
+   The login session (Supabase access + refresh tokens) is kept in
+   this browser only, the same way the official Supabase client
+   keeps it, so a reload no longer logs the person out. All SNS
+   data itself lives in Supabase (below), never in local storage. */
+var authRefreshToken = "";
+var authExpiresAt = 0; // epoch seconds
+var SESSION_KEY = "k_supa_session_v1";
+function storeSession() {
+  try {
+    if (loggedInEmail && authAccessToken) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ email: loggedInEmail, access_token: authAccessToken, refresh_token: authRefreshToken || "", expires_at: authExpiresAt || 0 }));
+    }
+  } catch (e) { /* storage unavailable (private mode etc.): session lasts this visit only */ }
+}
+function clearStoredSession() { try { localStorage.removeItem(SESSION_KEY); } catch (e) {} }
+function readStoredSession() {
+  try { var s = localStorage.getItem(SESSION_KEY); return s ? JSON.parse(s) : null; }
+  catch (e) { return null; }
+}
+function tryRefreshSession(saved, done) {
+  if (!saved || !saved.refresh_token) { clearStoredSession(); if (done) done(false); return; }
+  supaAuthFetch("/auth/v1/token?grant_type=refresh_token", { refresh_token: saved.refresh_token }).then(function (res) {
+    if (res.ok && res.data && res.data.access_token && res.data.user) {
+      finishLogin(res.data.user.email || saved.email, res.data.access_token, res.data.user, res.data.refresh_token, res.data.expires_in);
+      if (done) done(true);
+    } else { clearStoredSession(); if (done) done(false); }
+  }).catch(function () { if (done) done(false); });
+}
+function restoreSession() {
+  var saved = readStoredSession();
+  if (!saved || !saved.access_token || !supaBase()) return;
+  var nowSec = Math.floor(Date.now() / 1000);
+  if (saved.refresh_token && saved.expires_at && saved.expires_at < nowSec + 30) { tryRefreshSession(saved); return; }
+  supaAuthFetch("/auth/v1/user", { __method: "GET" }, saved.access_token).then(function (res) {
+    if (res.ok && res.data && res.data.email) {
+      authRefreshToken = saved.refresh_token || "";
+      authExpiresAt = saved.expires_at || 0;
+      finishLogin(res.data.email, saved.access_token, res.data, saved.refresh_token, saved.expires_at ? Math.max(0, saved.expires_at - nowSec) : 0);
+    } else {
+      tryRefreshSession(saved);
+    }
+  }).catch(function () { /* offline: stay on the login page this time */ });
+}
+
+/* ================= remote SNS data (Supabase tables) =================
+   Posts, phrase comments, reactions, follows and official accounts
+   are saved to this account's Supabase tables and loaded back at
+   login / session restore, so nothing disappears on reload.
+   Before this, they existed only in page memory and every reload
+   wiped them. Views/buzz keep growing locally and are stored with
+   each new post; AI replies are generated on the spot. */
+function supaRest(path, method, body) {
+  var headers = { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: "Bearer " + (authAccessToken || SUPABASE_PUBLISHABLE_KEY), "Content-Type": "application/json" };
+  if (method === "POST") headers.Prefer = "return=representation,resolution=merge-duplicates";
+  else if (method === "PATCH" || method === "DELETE") headers.Prefer = "return=minimal";
+  return fetch(supaBase() + "/rest/v1/" + path, { method: method, headers: headers, body: body ? JSON.stringify(body) : undefined })
+    .then(function (r) {
+      return r.text().then(function (t) {
+        var d = null;
+        try { d = t ? JSON.parse(t) : null; } catch (e) {}
+        return { ok: r.ok, status: r.status, data: d };
+      });
+    });
+}
+function fmtRemoteTime(iso) {
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return "いま";
+  return (d.getMonth() + 1) + "/" + d.getDate() + " " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+}
+function rowToPost(row) {
+  if (row.id > uid) uid = row.id;
+  var official = !!row.is_official;
+  /* Coerce every field to the type the renderers expect: a saved row
+     whose shape differs even slightly (a number stored as text, a
+     missing photo) must still render, never break the timeline or
+     the missions screen. */
+  var p = newPost({
+    authorKind: official ? "official" : "me", name: String(row.author_name || ""), handle: String(row.author_handle || ""),
+    shape: row.shape, color: row.color, official: official, verified: official,
+    category: String(row.category || ""), location: String(row.location || ""), hours: String(row.hours || ""),
+    followKey: official ? ("off:" + (row.author_handle || row.author_name)) : "",
+    timeLabel: fmtRemoteTime(row.created_at), body: String(row.body || ""), mood: String(row.mood || ""),
+    photo: typeof row.photo === "string" && row.photo ? row.photo : null, views: Number(row.views) || 0, buzz: Number(row.buzz) || 0,
+    mine: row.user_id === currentUserId
+  });
+  p.id = row.id; p.remoteId = row.id;
+  return p;
+}
+function loadRemoteData() {
+  if (!currentUserId || !authAccessToken || !supaBase()) return;
+  var myId = currentUserId;
+  supaRest("posts?select=*&order=created_at.desc&limit=200", "GET").then(function (res) {
+    if (!res.ok || !res.data || !loggedInEmail || currentUserId !== myId) return;
+    /* One malformed row must not take the whole timeline down:
+       convert row by row and keep the rows that convert cleanly. */
+    posts = res.data.map(function (row) { try { return rowToPost(row); } catch (e) { return null; } }).filter(function (p) { return !!p; });
+    renderAll();
+    if (!posts.length) return;
+    var ids = posts.map(function (p) { return p.remoteId; }).join(",");
+    supaRest("comments?select=*&post_id=in.(" + ids + ")&order=created_at.asc&limit=500", "GET").then(function (cres) {
+      if (!cres.ok || !cres.data || currentUserId !== myId) return;
+      cres.data.forEach(function (c) {
+        posts.forEach(function (p) { if (p.remoteId === c.post_id) p.comments.push({ phrase: c.phrase }); });
+      });
+      renderAll();
+    }).catch(function () {});
+    supaRest("reactions?select=*&post_id=in.(" + ids + ")&limit=1000", "GET").then(function (rres) {
+      if (!rres.ok || !rres.data || currentUserId !== myId) return;
+      rres.data.forEach(function (r) {
+        posts.forEach(function (p) {
+          if (p.remoteId !== r.post_id) return;
+          if (r.user_id === myId) p.myReactions[r.kind] = true;
+          else if (p.reactions[r.kind] != null) p.reactions[r.kind] = cap(p.reactions[r.kind] + 1);
+        });
+      });
+      renderAll();
+    }).catch(function () {});
+  }).catch(function () { /* offline: timeline stays as-is this visit */ });
+  var offQuery = "official_accounts?select=*&order=created_at.asc&limit=100" + (isAdmin() ? "" : "&user_id=eq." + encodeURIComponent(myId));
+  supaRest(offQuery, "GET").then(function (res) {
+    if (!res.ok || !res.data || !loggedInEmail || currentUserId !== myId) return;
+    officialApps = res.data.map(function (row) {
+      try {
+        if (row.id > uid) uid = row.id;
+        return { id: row.id, remoteId: row.id, name: String(row.name || ""), bio: String(row.bio || ""), handle: String(row.handle || ""), location: String(row.location || ""), hours: String(row.hours || ""), occupation: String(row.occupation || ""), category: String(row.category || ""), shape: row.shape, color: row.color, status: String(row.status || "pending") };
+      } catch (e) { return null; }
+    }).filter(function (a) { return !!a; });
+    renderAll();
+  }).catch(function () {});
+  supaRest("follows?select=target_key&user_id=eq." + encodeURIComponent(myId), "GET").then(function (res) {
+    if (!res.ok || !res.data || currentUserId !== myId) return;
+    followingOfficial = {}; followingSafe = {};
+    res.data.forEach(function (r) {
+      var k = r.target_key || "";
+      if (k.indexOf("safe:") === 0) followingSafe[k.slice(5)] = true;
+      else if (k) followingOfficial[k] = true;
+    });
+    renderAll();
+  }).catch(function () {});
+}
+function postRowBody(p, withPhoto) {
+  var row = {
+    user_id: currentUserId, author_name: p.name, author_handle: p.handle || "",
+    shape: p.shape, color: p.color, is_official: !!p.official,
+    category: p.category || "", location: p.location || "", hours: p.hours || "",
+    body: p.body || "", mood: p.mood || "", views: Math.floor(p.views) || 0, buzz: Math.floor(p.buzz) || 0
+  };
+  if (withPhoto && p.photo) row.photo = p.photo;
+  return row;
+}
+function saveRemotePost(p) {
+  if (!currentUserId || !authAccessToken || !supaBase() || p.remoteId) return;
+  supaRest("posts", "POST", postRowBody(p, true)).then(function (res) {
+    if (res.ok && res.data && res.data[0]) { p.remoteId = res.data[0].id; p.id = res.data[0].id; renderTimeline(); renderProfileStats(); return; }
+    /* The photo column may not exist yet (setup SQL not re-run):
+       save the post without the photo instead of losing it. */
+    if (p.photo) {
+      supaRest("posts", "POST", postRowBody(p, false)).then(function (res2) {
+        if (res2.ok && res2.data && res2.data[0]) { p.remoteId = res2.data[0].id; p.id = res2.data[0].id; renderTimeline(); renderProfileStats(); }
+      }).catch(function () {});
+    }
+  }).catch(function () { /* offline: post stays visible this visit */ });
+}
+function deleteRemotePost(p) {
+  if (!p || !p.remoteId || !authAccessToken) return;
+  supaRest("posts?id=eq." + p.remoteId, "DELETE").catch(function () {});
+}
+function saveRemoteOfficial(a) {
+  if (!currentUserId || !authAccessToken || !supaBase() || a.remoteId) return;
+  supaRest("official_accounts", "POST", {
+    user_id: currentUserId, name: a.name, handle: a.handle || "", bio: a.bio || "",
+    category: a.category || "", occupation: a.occupation || "", location: a.location || "",
+    hours: a.hours || "", shape: a.shape, color: a.color, status: a.status || "pending"
+  }).then(function (res) {
+    if (res.ok && res.data && res.data[0]) { a.remoteId = res.data[0].id; a.id = res.data[0].id; renderAll(); }
+  }).catch(function () {});
+}
+function updateRemoteOfficialStatus(a, status) {
+  if (!a || !a.remoteId || !authAccessToken) return;
+  supaRest("official_accounts?id=eq." + a.remoteId, "PATCH", { status: status }).catch(function () {});
+}
+function deleteRemoteOfficial(a) {
+  if (!a || !a.remoteId || !authAccessToken) return;
+  supaRest("official_accounts?id=eq." + a.remoteId, "DELETE").catch(function () {});
+}
+function saveRemoteFollow(key, on) {
+  if (!currentUserId || !authAccessToken || !key) return;
+  if (on) supaRest("follows", "POST", { user_id: currentUserId, target_key: key }).catch(function () {});
+  else supaRest("follows?user_id=eq." + encodeURIComponent(currentUserId) + "&target_key=eq." + encodeURIComponent(key), "DELETE").catch(function () {});
+}
+function saveRemoteReaction(p, kind, on) {
+  if (!currentUserId || !authAccessToken || !p.remoteId) return;
+  if (on) supaRest("reactions", "POST", { post_id: p.remoteId, user_id: currentUserId, kind: kind }).catch(function () {});
+  else supaRest("reactions?post_id=eq." + p.remoteId + "&user_id=eq." + encodeURIComponent(currentUserId) + "&kind=eq." + encodeURIComponent(kind), "DELETE").catch(function () {});
+}
+function saveRemoteComment(p, phrase) {
+  if (!currentUserId || !authAccessToken || !p.remoteId) return;
+  supaRest("comments", "POST", { post_id: p.remoteId, user_id: currentUserId, phrase: phrase }).catch(function () {});
+}
+function finishLogin(email, accessToken, user, refreshToken, expiresIn) {
+  loggedInEmail = email;
+  authAccessToken = accessToken || "";
+  if (refreshToken !== undefined) authRefreshToken = refreshToken || "";
+  if (expiresIn) authExpiresAt = Math.floor(Date.now() / 1000) + Number(expiresIn);
+  /* Each preparation step is guarded on its own: whichever one might
+     fail in a given browser/webview, the app shell must still open —
+     an unguarded throw here used to strand the user on a blank
+     screen right after a successful login. */
+  try { applyAccountProfile(user, email); } catch (e) {}
+  try { storeSession(); } catch (e) {}
+  try { updateAuthHeader(); } catch (e) {}
+  try { switchAuthMode("login"); } catch (e) {}
+  hideAuthView();
+  loadRemoteProfile();
+  loadRemoteData();
+  /* Last-resort watchdog: a few seconds after a successful login the
+     app shell must be on screen. If anything in the async chain
+     above left the login page up (or the shell hidden) anyway, open
+     the shell again — the user is logged in and must never be
+     stranded on a blank or stuck screen. */
+  setTimeout(function () {
+    if (!loggedInEmail) return;
+    if ($("shellView").classList.contains("hidden") || !$("authView").classList.contains("hidden")) {
+      try { hideAuthView(); } catch (e) {}
+    }
+  }, 3500);
+}
+function authSubmit() {
+  if (authBusy) return;
+  var email = $("authEmail").value.trim();
+  setAuthMsg("");
+  if (authMode !== "resetpw" && (!email || email.indexOf("@") === -1)) { setAuthMsg("メールアドレスを 入れてね。"); return; }
+  if (!supaBase()) { setAuthMsg(URL_NOT_SET_MSG); return; }
+  if (authMode === "resetpw") {
+    var newPw = $("authNewPassword").value, newPw2 = $("authNewPassword2").value;
+    if (newPw.length < 8) { setAuthMsg("新しい パスワードは 8もじ以上で 入れてね。"); return; }
+    if (newPw !== newPw2) { setAuthMsg("新しい パスワードが 2つとも 同じに なっていないよ。たしかめてね"); return; }
+    if (!recoveryToken) { setAuthMsg("再設定の リンクが 古くなっているよ。「パスワードを 忘れた人は こちら」から もう一度 メールを 送ってね"); return; }
+    authBusy = true; renderAuth();
+    supaAuthFetch("/auth/v1/user", { password: newPw, __method: "PUT" }, recoveryToken).then(function (res) {
+      authBusy = false;
+      if (!res.ok) { var info = authErrorInfo(res); authCanResend = info.resend; renderAuth(); setAuthMsg(info.text); return; }
+      var em = (res.data && res.data.email) || "";
+      var tok = recoveryToken;
+      recoveryToken = "";
+      if (em) finishLogin(em, tok, res.data);
+      else { switchAuthMode("login"); setAuthNotice("パスワードを 変えたよ。下から ログインしてね"); }
+    }).catch(function () {
+      authBusy = false; renderAuth();
+      setAuthMsg("インターネットに つながらなかったよ。つながりを たしかめて もう一度 ためしてね");
+    });
+    return;
+  }
+  var password = $("authPassword").value;
+  if (authMode !== "forgot" && password.length < 8) { setAuthMsg("パスワードは 8もじ以上で 入れてね。"); return; }
+  /* Registration asks for this account's own nickname and stores it
+     in the account's signup metadata, so the name belongs to this
+     account from the very first login — nobody inherits a shared
+     default name. */
+  var signupNickname = "";
+  if (authMode === "register") {
+    signupNickname = $("authNickname").value.trim();
+    if (!signupNickname) { setAuthMsg("ニックネームを 入れてね。みんなに 見える あなたの 名前だよ（本名は 書かないでね）。"); return; }
+    if (hasBanned(signupNickname)) { setAuthMsg(BANNED_MSG); return; }
+  }
+  authBusy = true; renderAuth();
+  var chain;
+  if (authMode === "register") chain = supaAuthFetch("/auth/v1/signup", { email: email, password: password, data: { nickname: signupNickname } });
+  else if (authMode === "login") chain = supaAuthFetch("/auth/v1/token?grant_type=password", { email: email, password: password });
+  else chain = supaAuthFetch("/auth/v1/recover", { email: email });
+  chain.then(function (res) {
+    authBusy = false;
+    if (!res.ok) { var info = authErrorInfo(res); authCanResend = info.resend; renderAuth(); setAuthMsg(info.text); return; }
+    if (authMode === "login") { finishLogin(email, res.data && res.data.access_token, res.data && res.data.user, res.data && res.data.refresh_token, res.data && res.data.expires_in); return; }
+    if (authMode === "register") {
+      // Confirmation email is on (sent via Gmail SMTP): normally signup
+      // returns a user but NO session — the account is created and a
+      // confirmation email is on its way. The person clicks the
+      // link in that email, lands back on this page, and is logged
+      // in by handleAuthFragment.
+      if (res.data && res.data.access_token) { finishLogin(email, res.data.access_token, res.data.user, res.data.refresh_token, res.data.expires_in); return; }
+      var newUser = (res.data && res.data.user) || (res.data && res.data.id ? res.data : null);
+      if (newUser && newUser.identities && newUser.identities.length === 0) {
+        // Supabase answers this way when the address is already
+        // registered (it does not reveal whether it exists beyond
+        // the empty identities list).
+        authCanResend = false; renderAuth();
+        setAuthMsg("その メールアドレスは もう登録されているよ。「ログインに もどる」から ログインしてね。まだ確認メールが終わっていないときは、届いたメールの中のリンクを押してね");
+        return;
+      }
+      authMode = "login"; authCanResend = true; renderAuth();
+      setAuthNotice(email + " に 確認メールを 送ったよ（Gmailから送信・送信元は youzhenshengu54@gmail.com）。メールの中の リンクを 押すと 本人確認が終わって、そのまま ログインできるよ。届かないときは 迷惑メールフォルダも見てね。下のボタンで もう一度 送ることもできるよ");
+      return;
+    }
+    // forgot: Supabase sent the standard password-reset email.
+    authMode = "login"; authCanResend = false; renderAuth();
+    setAuthNotice(email + " に パスワード再設定の メールを 送ったよ。メールの中の リンクを 開いて、新しい パスワードを 決めてね");
+  }).catch(function () {
+    authBusy = false; renderAuth();
+    setAuthMsg("インターネットに つながらなかったよ。つながりを たしかめて もう一度 ためしてね");
+  });
+}
+function authResendConfirmation() {
+  if (authBusy) return;
+  var email = $("authEmail").value.trim();
+  if (!email || email.indexOf("@") === -1) { setAuthMsg("確認メールを 送る メールアドレスを 入れてね。"); return; }
+  if (!supaBase()) { setAuthMsg(URL_NOT_SET_MSG); return; }
+  authBusy = true; renderAuth();
+  supaAuthFetch("/auth/v1/resend", { type: "signup", email: email }).then(function (res) {
+    authBusy = false;
+    if (!res.ok) { var info = authErrorInfo(res); authCanResend = info.resend || authCanResend; renderAuth(); setAuthMsg(info.text); return; }
+    renderAuth();
+    setAuthNotice(email + " に 確認メールを もう一度 送ったよ。メールの中の リンクを 押してね（届くまで 少し かかることが あるよ）");
+  }).catch(function () {
+    authBusy = false; renderAuth();
+    setAuthMsg("インターネットに つながらなかったよ。つながりを たしかめて もう一度 ためしてね");
+  });
+}
+/* When a Supabase email link (signup confirmation or password
+   reset) is configured to land back on this page, the session
+   arrives in the URL fragment. Read it once, scrub it from the
+   address bar, and act on it: recovery -> new-password form;
+   anything else -> fetch the account and log straight in. */
+function handleAuthFragment() {
+  var h = window.location.hash || "";
+  if (h.indexOf("access_token=") === -1) return;
+  var params = {};
+  h.slice(1).split("&").forEach(function (kv) {
+    var i = kv.indexOf("=");
+    if (i > 0) { try { params[decodeURIComponent(kv.slice(0, i))] = decodeURIComponent(kv.slice(i + 1)); } catch (e) {} }
+  });
+  /* In a sandboxed frame (e.g. an app webview) replaceState can throw
+     a SecurityError. Scrubbing the fragment is cosmetic — the login
+     below must go ahead either way, so never let this throw. */
+  try { if (window.history && history.replaceState) history.replaceState(null, "", window.location.pathname + window.location.search); } catch (e) {}
+  if (!params.access_token) return;
+  if (params.type === "recovery") {
+    recoveryToken = params.access_token;
+    authMode = "resetpw";
+    renderAuth();
+    setAuthNotice("メールを 確認できたよ。新しい パスワードを 決めてね");
+    return;
+  }
+  supaAuthFetch("/auth/v1/user", { __method: "GET" }, params.access_token).then(function (res) {
+    if (res.ok && res.data && res.data.email) finishLogin(res.data.email, params.access_token, res.data, params.refresh_token, params.expires_in ? parseInt(params.expires_in, 10) : 0);
+    else setAuthNotice("メールの確認が できたよ。下から ログインしてね");
+  }).catch(function () { /* stay on the login form */ });
+}
+$("authBtn").addEventListener("click", function () {
+  if (loggedInEmail) {
+    /* Logging out clears every per-account state, so the next person
+       who signs in on this device starts from their own account —
+       never from the previous person's name, posts or follows. */
+    loggedInEmail = "";
+    authAccessToken = "";
+    authRefreshToken = "";
+    authExpiresAt = 0;
+    clearStoredSession();
+    currentUserId = "";
+    profile = { nickname: "ニックネーム", shape: "heart", color: "sky" };
+    posts = [];
+    officialApps = [];
+    followingOfficial = {};
+    followingSafe = {};
+    postAs = 0;
+    missions.forEach(function (m) { m.done = false; });
+    updateAuthHeader();
+    switchAuthMode("login");
+    renderAll();
+  }
+  showAuthView();
+});
+$("authSwitchBtn").addEventListener("click", function () {
+  switchAuthMode(authMode === "login" ? "register" : "login");
+});
+$("authForgotLink").addEventListener("click", function () { switchAuthMode("forgot"); });
+$("authFormStage").addEventListener("submit", function (e) { e.preventDefault(); authSubmit(); });
+$("authResendBtn").addEventListener("click", function () { authResendConfirmation(); });
+
+/* ================= global click handling ================= */
+document.addEventListener("click", function (e) {
+  var t = e.target;
+  if (!t.closest) return;
+  var nav = t.closest("[data-nav]");
+  if (nav) { setView(nav.getAttribute("data-nav")); return; }
+  if (t.closest("#bnProfile") || t.closest("#sideProfileBtn") || t.closest("#editProfileBtn")) { showProfileView(); return; }
+
+  if (t.closest("#sidePostBtn") || t.closest("#fabBtn")) {
+    if (!$("profileView").classList.contains("hidden")) hideProfileView();
+    setView("home");
+    setTimeout(function () { var c = $("composerText"); c.scrollIntoView({ behavior: "smooth", block: "center" }); c.focus(); }, 60);
+    return;
+  }
+  var missionBtn = t.closest("[data-mission]");
+  if (missionBtn) {
+    var mid = parseInt(missionBtn.getAttribute("data-mission"), 10);
+    missions.forEach(function (m) { if (m.id === mid) m.done = !m.done; });
+    renderSlots();
+    return;
+  }
+  var fol = t.closest("[data-follow]");
+  if (fol) {
+    var key = fol.getAttribute("data-follow");
+    if (key.indexOf("safe:") === 0) { var h = key.slice(5); followingSafe[h] = !followingSafe[h]; if (!followingSafe[h]) delete followingSafe[h]; saveRemoteFollow(key, !!followingSafe[h]); }
+    else { followingOfficial[key] = !followingOfficial[key]; if (!followingOfficial[key]) delete followingOfficial[key]; saveRemoteFollow(key, !!followingOfficial[key]); }
+    renderAll();
+    return;
+  }
+  var folOff = t.closest("[data-follow-official]");
+  if (folOff) {
+    var k2 = folOff.getAttribute("data-follow-official");
+    followingOfficial[k2] = !followingOfficial[k2]; if (!followingOfficial[k2]) delete followingOfficial[k2];
+    saveRemoteFollow(k2, !!followingOfficial[k2]);
+    renderAll();
+    return;
+  }
+  var appOff = t.closest("[data-approve-official]");
+  if (appOff) {
+    if (!isAdmin()) return; /* approval is admin-only: ADMIN_EMAIL fixed */
+    var aid = parseInt(appOff.getAttribute("data-approve-official"), 10);
+    officialApps.forEach(function (a) { if (a.id === aid) { a.status = "approved"; updateRemoteOfficialStatus(a, "approved"); } });
+    renderAll();
+    return;
+  }
+  var rejOff = t.closest("[data-reject-official]");
+  if (rejOff) {
+    if (!isAdmin()) return; /* rejection is admin-only too */
+    var rid = parseInt(rejOff.getAttribute("data-reject-official"), 10);
+    officialApps.forEach(function (a) { if (a.id === rid) { a.status = "rejected"; updateRemoteOfficialStatus(a, "rejected"); } });
+    if (postAs === rid) postAs = 0;
+    renderAll();
+    return;
+  }
+  var delOff = t.closest("[data-del-official]");
+  if (delOff) {
+    var oid = parseInt(delOff.getAttribute("data-del-official"), 10);
+    if (delOff.getAttribute("data-confirm") === "1") {
+      officialApps.forEach(function (a) { if (a.id === oid) deleteRemoteOfficial(a); });
+      officialApps = officialApps.filter(function (a) { return a.id !== oid; });
+      if (postAs === oid) postAs = 0;
+      renderAll();
+    } else {
+      delOff.textContent = "ほんとに けす";
+      delOff.classList.add("confirm");
+      delOff.setAttribute("data-confirm", "1");
+    }
+    return;
+  }
+  var react = t.closest("[data-reaction]");
+  if (react) {
+    var pid = parseInt(react.getAttribute("data-post"), 10), kind = react.getAttribute("data-reaction");
+    posts.forEach(function (p) { if (p.id === pid) { p.myReactions[kind] = !p.myReactions[kind]; saveRemoteReaction(p, kind, !!p.myReactions[kind]); } });
+    renderTimeline(); renderProfileStats();
+    return;
+  }
+  var pickerBtn = t.closest("[data-picker]");
+  if (pickerBtn) {
+    var pk = parseInt(pickerBtn.getAttribute("data-picker"), 10);
+    openPickers[pk] = !openPickers[pk];
+    renderTimeline();
+    return;
+  }
+  var pickerClose = t.closest("[data-picker-close]");
+  if (pickerClose) { openPickers[parseInt(pickerClose.getAttribute("data-picker-close"), 10)] = false; renderTimeline(); return; }
+  var replyBtn = t.closest("[data-reply-submit]");
+  if (replyBtn) {
+    var rpid = parseInt(replyBtn.getAttribute("data-reply-submit"), 10);
+    var rInput = document.querySelector('[data-reply-input="' + rpid + '"]');
+    var rText = rInput ? rInput.value.trim() : "";
+    replyDrafts[rpid] = rText;
+    if (!rText) { replyErrors[rpid] = "返信コメントを書いてから「返信する」を押してね。"; renderTimeline(); return; }
+    /* Insults are rejected first and always: such a reply can never be sent. */
+    if (hasInsult(rText)) { replyErrors[rpid] = INSULT_MSG; renderTimeline(); return; }
+    if (hasBanned(rText)) { replyErrors[rpid] = REPLY_BANNED_MSG; renderTimeline(); return; }
+    posts.forEach(function (p) {
+      if (p.id === rpid) p.replies.push({ name: profile.nickname, shape: profile.shape, color: profile.color, body: rText, timeLabel: "いま" });
+    });
+    delete replyDrafts[rpid]; delete replyErrors[rpid];
+    renderAll();
+    return;
+  }
+  var phraseBtn = t.closest("[data-phrase]");
+  if (phraseBtn) {
+    var pp = parseInt(phraseBtn.getAttribute("data-post"), 10);
+    posts.forEach(function (p) { if (p.id === pp) { p.comments.push({ phrase: phraseBtn.getAttribute("data-phrase") }); saveRemoteComment(p, phraseBtn.getAttribute("data-phrase")); } });
+    openPickers[pp] = false;
+    renderAll();
+    return;
+  }
+  var menuBtn = t.closest("[data-menu]");
+  if (menuBtn) {
+    var mp = parseInt(menuBtn.getAttribute("data-menu"), 10);
+    openMenus[mp] = !openMenus[mp];
+    if (!openMenus[mp]) confirmDeleteId = null;
+    renderTimeline();
+    return;
+  }
+  var delAsk = t.closest("[data-del-ask]");
+  if (delAsk) { confirmDeleteId = parseInt(delAsk.getAttribute("data-del-ask"), 10); renderTimeline(); return; }
+  var delCancel = t.closest("[data-del-cancel]");
+  if (delCancel) { confirmDeleteId = null; renderTimeline(); return; }
+  var delConfirm = t.closest("[data-del-confirm]");
+  if (delConfirm) {
+    var dp = parseInt(delConfirm.getAttribute("data-del-confirm"), 10);
+    posts.forEach(function (p) { if (p.id === dp) deleteRemotePost(p); });
+    posts = posts.filter(function (p) { return p.id !== dp; });
+    confirmDeleteId = null; openMenus[dp] = false;
+    renderAll();
+    return;
+  }
+  var reportBtn = t.closest("[data-report]");
+  if (reportBtn) {
+    var rp = parseInt(reportBtn.getAttribute("data-report"), 10);
+    openMenus[rp] = false;
+    renderTimeline();
+    return;
+  }
+  var moreAi = t.closest("[data-more-ai]");
+  if (moreAi) {
+    var ap = parseInt(moreAi.getAttribute("data-more-ai"), 10);
+    posts.forEach(function (p) {
+      if (p.id === ap && !p.aiBusy) {
+        p.aiBusy = true; renderTimeline();
+        setTimeout(function () { pushSafeAiReply(p); p.aiBusy = false; renderAll(); }, 1200);
+      }
+    });
+    return;
+  }
+  var moodBtn = t.closest("[data-mood]");
+  if (moodBtn) { var mk = moodBtn.getAttribute("data-mood"); mood = mood === mk ? "" : mk; renderMoods(); return; }
+  var postasBtn = t.closest("[data-postas]");
+  if (postasBtn) { postAs = parseInt(postasBtn.getAttribute("data-postas"), 10); renderPostAs(); return; }
+  var tplBtn = t.closest("[data-tpl]");
+  if (tplBtn) {
+    var tpl = SHOP_TEMPLATES[parseInt(tplBtn.getAttribute("data-tpl"), 10)];
+    var cur = $("composerText").value;
+    $("composerText").value = (cur.trim() ? (tpl.text + "\n" + cur) : tpl.text).slice(0, 140);
+    updateComposer();
+    return;
+  }
+  /* safe feed */
+  var sc = t.closest("[data-safe-cat]");
+  if (sc) { safeState.category = sc.getAttribute("data-safe-cat"); safeState.savedOnly = false; safeState.followedOnly = false; safeState.counted = {}; renderSafe(); return; }
+  if (t.closest("[data-safe-saved]")) { safeState.savedOnly = !safeState.savedOnly; safeState.counted = {}; renderSafe(); return; }
+  if (t.closest("[data-safe-followed]")) { safeState.followedOnly = !safeState.followedOnly; safeState.counted = {}; renderSafe(); return; }
+  var sl = t.closest("[data-safe-like]");
+  if (sl) { var si2 = parseInt(sl.getAttribute("data-safe-like"), 10); safeState.liked[si2] = !safeState.liked[si2]; renderSafe(); return; }
+  var ss = t.closest("[data-safe-save]");
+  if (ss) { var si3 = parseInt(ss.getAttribute("data-safe-save"), 10); safeState.saved[si3] = !safeState.saved[si3]; renderSafe(); return; }
+  var sp = t.closest("[data-safe-picker]");
+  if (sp) { var si4 = parseInt(sp.getAttribute("data-safe-picker"), 10); safeState.pickerId = safeState.pickerId === si4 ? null : si4; renderSafe(); return; }
+  var sph = t.closest("[data-safe-phrase]");
+  if (sph) {
+    var si5 = parseInt(sph.getAttribute("data-safe-post"), 10);
+    if (!safeState.comments[si5]) safeState.comments[si5] = [];
+    safeState.comments[si5].push(sph.getAttribute("data-safe-phrase"));
+    safeState.pickerId = null;
+    renderSafe();
+    return;
+  }
+  var qz = t.closest("[data-quiz]");
+  if (qz) { quizPicked[parseInt(qz.getAttribute("data-quiz"), 10)] = parseInt(qz.getAttribute("data-choice"), 10); renderDiscover(); return; }
+});
+
+/* ================= composer events ================= */
+$("composerText").addEventListener("input", updateComposer);
+$("postBtn").addEventListener("click", doPost);
+$("photoBtn").addEventListener("click", function () { $("photoInput").click(); });
+$("photoInput").addEventListener("change", function () {
+  var f = this.files && this.files[0];
+  if (!f) return;
+  var allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+  var msg = $("postMsg");
+  msg.className = "msg"; msg.textContent = "";
+  if (allowed.indexOf(f.type) === -1) { msg.className = "msg err"; msg.textContent = "その写真は つかえない かたちだよ（JPEGやPNGの写真にしてね）"; return; }
+  if (f.size > 4 * 1024 * 1024) { msg.className = "msg err"; msg.textContent = "その写真は 大きすぎるよ。小さい写真にしてね"; return; }
+  /* Read the photo as a data URL (not a blob URL): a blob URL dies
+     with the page, while the data URL is saved with the post in
+     Supabase so the photo is still there after a reload. */
+  var reader = new FileReader();
+  reader.onload = function () {
+    photoUrl = String(reader.result || "");
+    $("photoImg").src = photoUrl;
+    $("photoPreview").style.display = "block";
+    updateComposer();
+  };
+  reader.onerror = function () { msg.className = "msg err"; msg.textContent = "その写真は 読みこめなかったよ。別の写真にしてね"; };
+  reader.readAsDataURL(f);
+});
+$("photoCancel").addEventListener("click", function () {
+  photoUrl = null; $("photoInput").value = ""; $("photoPreview").style.display = "none";
+  updateComposer();
+});
+$("tlAll").addEventListener("click", function () { tlFilter = "all"; syncTlFilter(); renderTimeline(); });
+$("tlFollowing").addEventListener("click", function () { tlFilter = "following"; syncTlFilter(); renderTimeline(); });
+$("profileBackBtn").addEventListener("click", hideProfileView);
+
+/* ================= render all =================
+   Every section renders behind its own guard. The missions screen
+   is built entirely from slot cards, so one card failing (for
+   example on an unexpected saved-data shape) must not take the
+   whole screen down with it — the rest still renders. */
+function safeRender(fn) { try { fn(); } catch (e) {} }
+function renderAll() {
+  safeRender(renderNav);
+  safeRender(renderProfileStats);
+  safeRender(renderTimeline);
+  safeRender(renderSafe);
+  safeRender(renderDiscover);
+  safeRender(renderPostAs);
+  safeRender(renderSlots);
+}
+
+/* ================= buzz engine ================= */
+setInterval(function () {
+  if (breakPhase !== "using") return;
+  var changed = false;
+  posts.forEach(function (p) {
+    var gain = p.mine ? 20 + Math.floor(Math.random() * 90) : Math.floor(Math.random() * 30);
+    if (p.views < MAX_COUNT) { p.views = cap(p.views + gain); changed = true; }
+    if (p.buzz < 100) { p.buzz = Math.min(100, p.buzz + Math.random() * 1.4); changed = true; }
+  });
+  if (changed) {
+    // update visible numbers in place
+    posts.forEach(function (p) {
+      var el = document.querySelector('.post[data-post-id="' + p.id + '"]');
+      if (!el) return;
+      var fill = el.querySelector(".buzz-fill");
+      if (fill) { fill.style.width = Math.min(100, p.buzz) + "%"; fill.className = "buzz-fill" + (p.buzz >= 75 ? " hot" : ""); }
+      var bl = el.querySelector(".buzz-label");
+      if (bl) { bl.textContent = "バズり度 " + buzzLabel(p.buzz); bl.className = "buzz-label" + (p.buzz >= 75 ? " hot" : ""); }
+    });
+    renderProfileStats();
+    document.querySelectorAll("[data-stats-slot]").forEach(function (el) { el.innerHTML = statsCardHtml(); });
+  }
+}, 4000);
+// occasional extra AI reply on my posts that have few replies is handled at post time;
+// growth of views also tops up stats cards every 30s without churn
+setInterval(function () {
+  if (breakPhase !== "using") return;
+  document.querySelectorAll("[data-stats-slot]").forEach(function (el) { el.innerHTML = statsCardHtml(); });
+  document.querySelectorAll("[data-missions-slot]").forEach(function (el) { el.innerHTML = missionsCardHtml(); });
+}, 30000);
+
+/* ================= 10-minute session limit ================= */
+var SESSION_MS = 10 * 60 * 1000, BREAK_MS = 60 * 1000;
+var sessionStart = Date.now(), breakUntil = null, breakPhase = "using", lastTick = Date.now();
+function fmtClock(ms) {
+  var s = Math.max(0, Math.ceil(ms / 1000));
+  return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+}
+setInterval(function () {
+  var now = Date.now();
+  var away = now - lastTick;
+  lastTick = now;
+  // While the login page is showing, the 10 minutes do not run down.
+  if (!loggedInEmail && breakPhase === "using") { sessionStart = now; return; }
+  if (away > 2 * 60 * 1000 && breakPhase === "using") { sessionStart = now; }
+  if (breakPhase === "using") {
+    var remain = SESSION_MS - (now - sessionStart);
+    if (remain <= 0) {
+      breakPhase = "break"; breakUntil = now + BREAK_MS;
+      $("breakOverlay").classList.add("show");
+      $("breakActive").classList.remove("hidden");
+      $("breakDone").classList.add("hidden");
+    } else {
+      $("timerText").textContent = fmtClock(remain);
+      $("timerFill").style.width = Math.max(0, Math.min(100, remain / SESSION_MS * 100)) + "%";
+      $("timerFill").classList.toggle("low", remain <= 60000);
+      $("timerBar").setAttribute("aria-valuenow", Math.ceil(remain / 1000));
+    }
+  } else if (breakPhase === "break") {
+    var bRemain = breakUntil - now;
+    if (bRemain <= 0) {
+      breakPhase = "done";
+      $("breakActive").classList.add("hidden");
+      $("breakDone").classList.remove("hidden");
+    } else {
+      $("breakCount").textContent = fmtClock(bRemain);
+    }
+  }
+}, 1000);
+$("breakAgainBtn").addEventListener("click", function () {
+  breakPhase = "using"; sessionStart = Date.now(); breakUntil = null; lastTick = Date.now();
+  $("breakOverlay").classList.remove("show");
+});
+
+/* ================= init =================
+   The first page is always the login page: the SNS shell stays
+   hidden until a login succeeds. Each boot step is guarded on its
+   own, so a failure in one (for example while reading an email
+   link's fragment inside a sandboxed frame) can never stop the
+   login page — or a saved session — from coming up. */
+safeRender(renderMoods);
+renderAll();
+safeRender(syncTlFilter);
+safeRender(updateComposer);
+var hadAuthFragment = (window.location.hash || "").indexOf("access_token=") !== -1;
+safeRender(handleAuthFragment);
+showAuthView();
+/* If a saved session exists, log back in automatically so a reload
+   keeps the login, the posts and the official accounts. Skipped
+   when an email link just landed here (it logs in by itself). */
+if (!hadAuthFragment) safeRender(restoreSession);
+})();
+</script>
+</body>
+</html>
