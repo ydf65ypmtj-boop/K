@@ -474,7 +474,7 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
           </div>
         </div>
         <div class="profile-name my-name">ニックネーム</div>
-        <div class="profile-sub"><span class="my-handle">@ニックネーム</span> · K（子供も大人も使える あんしんSNS）</div>
+        <div class="profile-sub"><span class="my-handle">@ニックネーム</span> · K（子供も大人も使える あんしんSNS） <span id="myAgeGroupLabel"></span></div>
         <div class="profile-note hidden" id="adminLine" style="font-weight:700;color:var(--accent)">管理者アカウントで ログイン中だよ（管理者は youzhenshengu54@gmail.com に固定）</div>
         <div class="profile-note hidden" id="authEmailLine"></div>
         <div class="profile-stats" id="profileStats"></div>
@@ -485,14 +485,25 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
         <div class="tabs" role="tablist" aria-label="画面の切りかえ" id="tabBar"></div>
         <div class="timer-row">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:none;color:var(--dim)" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-          <span class="t-label">つかえる じかん あと <span id="timerText">10:00</span></span>
+          <span class="t-label"><span id="timerLabel">つかえる じかん あと </span><span id="timerText">10:00</span></span>
           <div class="timer-track" role="progressbar" aria-label="つかえる じかん" aria-valuemin="0" aria-valuemax="600" aria-valuenow="600" id="timerBar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
-          <span class="t-note">10分 たったら おやすみタイム</span>
+          <span class="t-note" id="timerNote">10分 たったら おやすみタイム</span>
         </div>
       </div>
 
       <!-- HOME -->
       <div id="view-home">
+        <div id="agePrompt" class="warn-box hidden" style="margin:0 0 12px">
+          <p style="margin:0 0 8px"><b>年代を えらんでね。</b>リニューアルで、タイムラインが 子供と 大人で 分かれるように なったよ。選ぶまでは 安全のため「子供」の タイムラインに なるよ。公式アカウントの ポストは 今まで通り みんなに 見えるよ。</p>
+          <div class="picker-row" role="group" aria-label="年代をえらぶ">
+            <button type="button" class="chip-pick" data-age-choose="child">子供です</button>
+            <button type="button" class="chip-pick" data-age-choose="adult">大人です</button>
+          </div>
+        </div>
+        <div id="adultBreakNote" class="warn-box hidden" style="margin:0 0 12px">
+          <p style="margin:0 0 8px">10分 つかったよ。目を 休めて、少し 休憩しよう。大人は 画面は とまらないけど、休憩は 大事だよ。</p>
+          <button type="button" class="chip-pick" data-adult-break-close="1">わかった</button>
+        </div>
         <section class="composer" aria-label="あたらしい ポスト">
           <div id="composerConfetti"></div>
           <p class="warn-box hidden" id="pendingWarn" style="margin:0 0 12px">審査中の公式アカウントがあるよ。公式アカウントのカードの「審査」で認証するまで、そのアカウントではポストできないよ。</p>
@@ -600,6 +611,14 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
           <label class="form-label" for="authNickname">ニックネーム（みんなに 見える 名前・12もじまで）</label>
           <input id="authNickname" class="field-input" maxlength="12" autocomplete="nickname" placeholder="れい：ゆうちゃん" style="margin-top:4px" />
           <p class="auth-note-sm" style="text-align:left">この名前は あなたのアカウント専用だよ。ほかの人の名前には ならないよ。本名は 書かないでね。</p>
+        </div>
+        <div id="authAgeWrap" class="hidden">
+          <span class="form-label" id="authAgeLabel">年代を えらんでね</span>
+          <div class="picker-row" role="group" aria-labelledby="authAgeLabel" style="margin-top:4px">
+            <button type="button" class="chip-pick" data-age-pick="child" aria-pressed="true">子供</button>
+            <button type="button" class="chip-pick" data-age-pick="adult" aria-pressed="false">大人</button>
+          </div>
+          <p class="auth-note-sm" style="text-align:left">タイムラインは 子供と 大人で 分かれるよ。公式アカウントの ポストは みんなに 見えるよ。あとから プロフィールでも 変えられるよ。</p>
         </div>
         <div id="authPasswordWrap">
           <label class="form-label" for="authPassword">パスワード（8もじ以上）</label>
@@ -872,6 +891,10 @@ var SUPABASE_SQL = [
 "  created_at timestamptz not null default now()",
 ");",
 "",
+"-- Renewal (2026-11-18): age group for the age-separated timeline.",
+"-- NULL means not chosen yet; the page treats NULL as the child group (safe side).",
+"alter table public.profiles add column if not exists age_group text;",
+"",
 "create table if not exists public.posts (",
 "  id bigint generated always as identity primary key,",
 "  user_id uuid not null references auth.users(id) on delete cascade,",
@@ -1077,7 +1100,7 @@ var QUIZZES = [
    nickname in applyAccountProfile() at login (saved profile row ->
    signup metadata -> email-derived name), so different people never
    all show up as the same person. */
-var profile = { nickname: "ニックネーム", shape: "heart", color: "sky" };
+var profile = { nickname: "ニックネーム", shape: "heart", color: "sky", ageGroup: null };
 var currentUserId = "";
 var view = "home";
 var tlFilter = "all";
@@ -1101,13 +1124,56 @@ function newPost(o) {
     mood: o.mood || "", photo: o.photo || null, views: o.views || 0, buzz: o.buzz || 0,
     reactions: o.reactions || { heart: 0, star: 0, like: 0, sparkles: 0 },
     myReactions: {}, comments: o.comments || [], aiReplies: o.aiReplies || [], replies: o.replies || [],
-    mine: !!o.mine, aiBusy: false
+    mine: !!o.mine, aiBusy: false,
+    authorId: o.authorId || "", authorAgeGroup: o.authorAgeGroup || ""
   };
 }
 /* Timeline starts empty: all sample accounts/posts (ケン・みかん・さくら・
    まるぱん・たっきゅう王・まちのニュース・ブックマート など) were removed
    at the owner's request. New posts appear here as people post. */
 var posts = [];
+
+/* ================= age groups (2026-11-18 renewal) =================
+   The timeline is separated by age group: general posts are only
+   visible inside the same group (child / adult). Reviewed official
+   accounts stay visible to every group, exactly as before. An
+   account that has not chosen a group yet is treated as the child
+   group (the safe side) everywhere: filtering, the session timer
+   and the prompts all go through effectiveAgeGroup(). The choice
+   itself lives in the account's signup metadata and, once the owner
+   has run SUPABASE_AGE_GROUP.sql, in profiles.age_group too; when
+   that column is missing the page falls back to metadata only and
+   treats every other author as the child group. */
+var authorAgeById = {};   // profiles.id -> "child" | "adult" (unknown -> child)
+var ageColumnOk = true;   // false once profiles.age_group turns out to be missing
+function isValidAgeGroup(g) { return g === "child" || g === "adult"; }
+function effectiveAgeGroup() { return profile.ageGroup === "adult" ? "adult" : "child"; }
+function postVisibleToMe(p) {
+  if (!p) return false;
+  if (p.official) return true;   // reviewed official accounts: every age group
+  if (p.mine) return true;       // my own posts are always visible to me
+  return (p.authorAgeGroup || "child") === effectiveAgeGroup();
+}
+function chooseAgeGroup(g) {
+  if (!isValidAgeGroup(g) || !loggedInEmail) return;
+  profile.ageGroup = g;
+  saveRemoteProfile();
+  if (authAccessToken) {
+    supaAuthFetch("/auth/v1/user", { data: { nickname: profile.nickname, shape: profile.shape, color: profile.color, age_group: g }, __method: "PUT" }, authAccessToken).catch(function () {});
+  }
+  renderAll();
+}
+function renderAgeChrome() {
+  var prompt = $("agePrompt");
+  if (prompt) prompt.classList.toggle("hidden", !(loggedInEmail && !profile.ageGroup));
+  var label = $("myAgeGroupLabel");
+  if (label) label.textContent = loggedInEmail ? ("· 年代：" + (profile.ageGroup === "adult" ? "大人" : profile.ageGroup === "child" ? "子供" : "子供（未選択）")) : "";
+  var adult = effectiveAgeGroup() === "adult";
+  var note = $("timerNote");
+  if (note) note.textContent = adult ? "10分ごとに 休憩の お知らせ（画面は とまらないよ）" : "10分 たったら おやすみタイム";
+  var tlabel = $("timerLabel");
+  if (tlabel) tlabel.textContent = adult ? "休憩の お知らせまで あと " : "つかえる じかん あと ";
+}
 
 /* ================= AI fan replies (content-aware, star fans only) ================= */
 var FAN_NAMES = ["バズねこ", "ほしぞらファン", "おうえん隊長", "キラキラ応援団", "そらいろファン"];
@@ -1195,6 +1261,7 @@ function buzzLabel(score) {
 /* ================= shared card templates ================= */
 var RULES = [
   "このSNSは子供だけでなく、大人も使えるよ。お店の人や有名人・活動している人、団体も公式アカウントを申請できるよ。年齢に関係なく、みんなが気持ちよく使える言葉で投稿してね",
+  "タイムラインは 子供と 大人で 分かれていて、一般のポストは 同じ年代の人にだけ 見えるよ。審査済みの 公式アカウントのポストは、年代に関係なく みんなが 見られるよ",
   "本名・自宅の住所・学校や勤務先など、個人が分かる情報は書かない（公式アカウントの申請でも本名と自宅の住所は聞かないよ）",
   "子供も使うので、子供に適さない言葉（悪口・侮辱的な言葉・暴力の言葉・お酒やギャンブルの言葉など）は、大人の投稿でもブロックされて、ポストできないよ。禁止ワードは確認済みで、公式アカウントへの返信でも同じチェックが必ずかかって、侮辱的な言葉の返信は絶対に送れないよ",
   "AIファンの返信・コメントにも禁止ワードチェックが必ずかかって、AIが禁止ワード（侮辱的な言葉を含む）を言うことは絶対にないよ。もし生成した文に禁止ワードが含まれていたら、その返信は出さずに書き直すか破棄する仕組みだよ",
@@ -1211,7 +1278,7 @@ var RULES = [
   "申請はメールを使わず、アプリの中の「審査」にすぐ出るよ。管理者（youzhenshengu54@gmail.com に固定）がアプリの中で認証したアカウントだけが「認証済み」になってポストでき、その投稿はログイン中の全員が見られるよ",
   "公式アカウントは、本物のお店みたいに @ユーザー名・種類・場所・営業時間を出せるよ。実在のお店や有名人の名前を使うときは、その本人・関係者だけが申請してね（なりすましはしない）",
   "フォローは このSNSの中だけ：公式アカウントと、お手本ポストの 博士・先生を フォローできて、ホームで「フォロー中だけ」に 絞って 見られるよ",
-  "10分 つかったら おやすみタイム（1分）。目を 休めてから また あそぼう",
+  "10分 つかったら、子供は おやすみタイム（1分）、大人は 画面は とまらずに 休憩の お知らせが 出るよ。目を 休めてから また つかおう",
   "メールアドレスごとに プロフィールと ポストは 別々だよ。別のメアドで ログインすると、そのメアドの プロフィールと ポストだけが 見えて、ほかのメアドのものは 見えないよ",
   "アカウントを削除すると、そのアカウントのプロフィール・ポスト・公式アカウント・フォロー・ミッション・ログイン情報も一緒に消えて、元に戻せないよ。管理者は youzhenshengu54@gmail.com に固定で、ほかのアカウントに移ることはないよ",
   "パスワードは ほかの人に 教えない・見せない",
@@ -1526,6 +1593,11 @@ function officialCardHtml() {
     '<p class="warn-box">安全のため、申請では本名（氏名）や自宅の住所は絶対に入れないでね。聞かれることもないよ。場所は「○○市」くらいまでで十分だよ。</p>' +
     listHtml + reviewHtml + formHtml + "</section>";
 }
+function agePickHtml(current) {
+  return [{ key: "child", label: "子供" }, { key: "adult", label: "大人" }].map(function (a) {
+    return '<button type="button" class="chip-pick" data-chip="ageGroup" data-value="' + a.key + '" aria-label="年代：' + a.label + '" aria-pressed="' + (current === a.key) + '">' + a.label + "</button>";
+  }).join("");
+}
 function profileFormHtml() {
   return '<form class="card" data-profile-form novalidate aria-label="プロフィール">' +
     '<h2 style="font-size:20px">プロフィールを かえる</h2>' +
@@ -1536,6 +1608,9 @@ function profileFormHtml() {
     '<div class="picker-row" role="group" aria-label="マークをえらぶ" data-pf-shapes></div>' +
     '<p class="form-label" style="margin-top:20px">いろを えらんでね</p>' +
     '<div class="picker-row" role="group" aria-label="いろをえらぶ" data-pf-colors></div>' +
+    '<p class="form-label" style="margin-top:20px">年代を えらんでね</p>' +
+    '<div class="picker-row" role="group" aria-label="年代をえらぶ" data-pf-ages></div>' +
+    '<p class="form-foot">タイムラインは 子供と 大人で 分かれるよ。公式アカウントの ポストは みんなに 見えるよ。年代を 選んでいないときは、安全のため「子供」として あつかわれるよ</p>' +
     '<div class="msg" data-pf-msg role="alert"></div>' +
     '<button type="submit" class="btn-submit">これで ほぞん</button>' +
     '<p class="form-foot">ほんとうの なまえや じゅうしょは かかないでね</p></form>';
@@ -1715,14 +1790,20 @@ function postHtml(p) {
     "</div></div></article>";
 }
 function renderTimeline() {
-  var visible = posts;
-  if (tlFilter === "following") visible = posts.filter(function (p) { return p.official && p.followKey && followingOfficial[p.followKey]; });
+  /* Age separation: general posts show only inside my own age
+     group; reviewed official posts show to everyone (as before). */
+  var visible = posts.filter(postVisibleToMe);
+  if (tlFilter === "following") visible = visible.filter(function (p) { return p.official && p.followKey && followingOfficial[p.followKey]; });
   if (!posts.length) {
     $("timeline").innerHTML = '<div class="empty-note"><p class="big">まだ ポストが ないよ</p><p>上の わくに きょうのことを かいて、さいしょの ポストを してみよう！</p></div>';
     return;
   }
   if (!visible.length) {
-    $("timeline").innerHTML = '<div class="empty-note"><p class="big">フォロー中の アカウントの ポストは まだ ないよ</p><p>公式アカウントの ポストの「フォローする」を 押すと、ここに その アカウントの ポストだけ 集まるよ。「Kあんぜんポスト」の 博士や先生も フォローできるよ。</p></div>';
+    if (tlFilter === "following") {
+      $("timeline").innerHTML = '<div class="empty-note"><p class="big">フォロー中の アカウントの ポストは まだ ないよ</p><p>公式アカウントの ポストの「フォローする」を 押すと、ここに その アカウントの ポストだけ 集まるよ。「Kあんぜんポスト」の 博士や先生も フォローできるよ。</p></div>';
+    } else {
+      $("timeline").innerHTML = '<div class="empty-note"><p class="big">同じ年代の人の ポストは まだ ないよ</p><p>タイムラインは 子供と 大人で 分かれているよ。公式アカウントの ポストは みんなに 見えるよ。上の わくに きょうのことを かいて、さいしょの ポストを してみよう！</p></div>';
+    }
     return;
   }
   $("timeline").innerHTML = visible.map(postHtml).join("");
@@ -1797,7 +1878,7 @@ function renderSafe() {
 /* ================= discover ================= */
 var quizPicked = {};
 function renderDiscover() {
-  var photoPosts = posts.filter(function (p) { return p.photo; });
+  var photoPosts = posts.filter(function (p) { return p.photo && postVisibleToMe(p); });
   var genres = ["news", "sports", "music", "weather", "food", "animals"];
   var pickup = [];
   genres.forEach(function (g) {
@@ -1880,6 +1961,7 @@ function doPost() {
     if (a) author = { authorKind: "official", name: a.name, handle: a.handle, shape: a.shape, color: a.color, official: true, verified: true, category: a.category, location: a.location, hours: a.hours, followKey: "app:" + a.id };
   }
   author.body = text; author.mood = mood; author.photo = photoUrl; author.views = 3; author.buzz = 4; author.mine = true; author.timeLabel = "いま";
+  author.authorId = currentUserId; author.authorAgeGroup = effectiveAgeGroup();
   var p = newPost(author);
   posts.unshift(p);
   saveRemotePost(p); /* kept in Supabase so the post survives a reload */
@@ -1991,13 +2073,14 @@ function bindOfficialForms() {
 function bindProfileForms() {
   document.querySelectorAll("[data-profile-form]").forEach(function (form) {
     var slot = form.closest("[data-profileform-slot]");
-    var draft = { nickname: profile.nickname, shape: profile.shape, color: profile.color };
+    var draft = { nickname: profile.nickname, shape: profile.shape, color: profile.color, ageGroup: profile.ageGroup };
     var nameInput = slot.querySelector("[data-pf-name]");
     nameInput.value = profile.nickname;
     function refresh() {
       slot.querySelector("[data-pf-avatar]").innerHTML = avatarHtml(draft.shape, draft.color, 80);
       slot.querySelector("[data-pf-shapes]").innerHTML = shapeGroupHtml(draft.shape, false);
       slot.querySelector("[data-pf-colors]").innerHTML = colorGroupHtml(draft.color, false);
+      slot.querySelector("[data-pf-ages]").innerHTML = agePickHtml(draft.ageGroup);
     }
     form.addEventListener("click", function (e) {
       var chip = e.target.closest ? e.target.closest("[data-chip]") : null;
@@ -2013,13 +2096,15 @@ function bindProfileForms() {
       if (!v) { msg.className = "msg err"; msg.textContent = "ニックネームを 入れてね。"; return; }
       if (hasBanned(v)) { msg.className = "msg err"; msg.textContent = BANNED_MSG; return; }
       var oldName = profile.nickname;
-      profile = { nickname: v, shape: draft.shape, color: draft.color };
+      profile = { nickname: v, shape: draft.shape, color: draft.color, ageGroup: isValidAgeGroup(draft.ageGroup) ? draft.ageGroup : profile.ageGroup };
       /* Save to THIS account only: its profiles row and its auth
          metadata, so the new name follows this account to any
          device and never leaks into anyone else's account. */
       saveRemoteProfile();
       if (authAccessToken) {
-        supaAuthFetch("/auth/v1/user", { data: { nickname: v, shape: draft.shape, color: draft.color }, __method: "PUT" }, authAccessToken).catch(function () {});
+        var metaData = { nickname: v, shape: draft.shape, color: draft.color };
+        if (isValidAgeGroup(profile.ageGroup)) metaData.age_group = profile.ageGroup;
+        supaAuthFetch("/auth/v1/user", { data: metaData, __method: "PUT" }, authAccessToken).catch(function () {});
       }
       posts.forEach(function (p) { if (p.mine && p.authorKind === "me") { p.name = v; p.shape = draft.shape; p.color = draft.color; } });
       if (oldName !== v) { /* handles follow nickname automatically */ }
@@ -2047,6 +2132,7 @@ function bindProfileForms() {
    when its link lands back on this page (URL fragment with
    type=recovery), the new-password form below completes it. */
 var authMode = "login"; // login | register | forgot | resetpw
+var signupAgeGroup = "child"; // age group picked on the register form (safe side first)
 var authBusy = false;
 var loggedInEmail = "";
 var authAccessToken = "";
@@ -2068,7 +2154,7 @@ function renderAuth() {
   var titles = { login: "ログイン", register: "あたらしく 登録", forgot: "パスワードを 忘れたとき", resetpw: "新しい パスワード" };
   var descs = {
     login: "登録した メールアドレスと パスワードを 入れると ログインできるよ。",
-    register: "メールアドレスと パスワードと、あなたの ニックネームを 決めてね。ニックネームは アカウントごとに 別々で、ほかの人と 同じには ならないよ。登録すると、そのメールアドレスに 確認メール（Gmailから送信）が 届くよ。メールの中の リンクを 押してから ログインしてね。",
+    register: "メールアドレスと パスワードと、あなたの ニックネームと 年代（子供／大人）を 決めてね。ニックネームは アカウントごとに 別々で、ほかの人と 同じには ならないよ。登録すると、そのメールアドレスに 確認メール（Gmailから送信）が 届くよ。メールの中の リンクを 押してから ログインしてね。",
     forgot: "登録した メールアドレスを 入れてね。パスワード再設定の メールを 送るよ。メールの中の リンクを 開くと、新しい パスワードに 変えられるよ。",
     resetpw: "新しい パスワードを 決めてね。決めたら そのまま ログインするよ。"
   };
@@ -2078,6 +2164,8 @@ function renderAuth() {
   $("authForgotNote").classList.toggle("hidden", authMode !== "forgot");
   $("authEmailWrap").classList.toggle("hidden", authMode === "resetpw");
   $("authNicknameWrap").classList.toggle("hidden", authMode !== "register");
+  $("authAgeWrap").classList.toggle("hidden", authMode !== "register");
+  document.querySelectorAll("[data-age-pick]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-age-pick") === signupAgeGroup ? "true" : "false"); });
   $("authPasswordWrap").classList.toggle("hidden", authMode === "forgot" || authMode === "resetpw");
   $("authNewPwWrap").classList.toggle("hidden", authMode !== "resetpw");
   $("authForgotLink").classList.toggle("hidden", authMode !== "login");
@@ -2186,9 +2274,17 @@ function applyAccountProfile(user, email) {
   profile = {
     nickname: nick.slice(0, 12) || "ニックネーム",
     shape: isValidShape(meta.shape) ? meta.shape : "heart",
-    color: isValidColor(meta.color) ? meta.color : "sky"
+    color: isValidColor(meta.color) ? meta.color : "sky",
+    ageGroup: isValidAgeGroup(meta.age_group) ? meta.age_group : null
   };
   currentUserId = (user && user.id) || "";
+}
+/* The account's own profiles row. age_group is included only when
+   a group has been chosen and the column is known to exist. */
+function profileRowBody() {
+  var row = { id: currentUserId, nickname: profile.nickname, shape: profile.shape, color: profile.color };
+  if (ageColumnOk && isValidAgeGroup(profile.ageGroup)) row.age_group = profile.ageGroup;
+  return row;
 }
 function saveRemoteProfile() {
   if (!currentUserId || !authAccessToken || !supaBase()) return;
@@ -2200,28 +2296,47 @@ function saveRemoteProfile() {
       "Content-Type": "application/json",
       Prefer: "resolution=merge-duplicates,return=minimal"
     },
-    body: JSON.stringify({ id: currentUserId, nickname: profile.nickname, shape: profile.shape, color: profile.color })
+    body: JSON.stringify(profileRowBody())
+  }).then(function (r) {
+    /* If the age_group column is not in the table yet, the upsert
+       fails: remember that and save once more without the column,
+       so the profile still lands in the account's own row. */
+    if (r && !r.ok && ageColumnOk && profile.ageGroup) { ageColumnOk = false; saveRemoteProfile(); }
   }).catch(function () { /* offline: the metadata copy still holds the name */ });
 }
 function loadRemoteProfile() {
   if (!currentUserId || !authAccessToken || !supaBase()) return;
-  fetch(supaBase() + "/rest/v1/profiles?id=eq." + encodeURIComponent(currentUserId) + "&select=nickname,shape,color", {
-    headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: "Bearer " + authAccessToken }
-  }).then(function (r) { return r.ok ? r.json() : null; }).then(function (rows) {
-    if (!loggedInEmail) return; /* logged out again meanwhile */
-    if (rows && rows.length && rows[0] && rows[0].nickname && !hasBanned(String(rows[0].nickname))) {
-      profile = {
-        nickname: String(rows[0].nickname).slice(0, 12),
-        shape: isValidShape(rows[0].shape) ? rows[0].shape : profile.shape,
-        color: isValidColor(rows[0].color) ? rows[0].color : profile.color
-      };
-      renderAll();
-    } else {
-      /* First login for this account: save its own profile row so
-         the name follows this account, not anyone else's. */
-      saveRemoteProfile();
-    }
-  }).catch(function () { /* keep the metadata/email-derived profile */ });
+  var myId = currentUserId;
+  /* Ask for age_group too. When the column is not in the table yet
+     (SUPABASE_AGE_GROUP.sql not run), PostgREST answers with an
+     error — then remember that and read the row without it, so the
+     profile still loads exactly as before the renewal. */
+  function attempt(withAge) {
+    var sel = withAge ? "nickname,shape,color,age_group" : "nickname,shape,color";
+    fetch(supaBase() + "/rest/v1/profiles?id=eq." + encodeURIComponent(myId) + "&select=" + sel, {
+      headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: "Bearer " + authAccessToken }
+    }).then(function (r) {
+      if (!r.ok && withAge) { ageColumnOk = false; attempt(false); return null; }
+      return r.ok ? r.json() : null;
+    }).then(function (rows) {
+      if (!rows || currentUserId !== myId) return;
+      if (!loggedInEmail) return; /* logged out again meanwhile */
+      if (rows.length && rows[0] && rows[0].nickname && !hasBanned(String(rows[0].nickname))) {
+        profile = {
+          nickname: String(rows[0].nickname).slice(0, 12),
+          shape: isValidShape(rows[0].shape) ? rows[0].shape : profile.shape,
+          color: isValidColor(rows[0].color) ? rows[0].color : profile.color,
+          ageGroup: isValidAgeGroup(rows[0].age_group) ? rows[0].age_group : profile.ageGroup
+        };
+        renderAll();
+      } else {
+        /* First login for this account: save its own profile row so
+           the name follows this account, not anyone else's. */
+        saveRemoteProfile();
+      }
+    }).catch(function () { /* keep the metadata/email-derived profile */ });
+  }
+  attempt(ageColumnOk);
 }
 /* ================= session persistence =================
    The login session (Supabase access + refresh tokens) is kept in
@@ -2310,11 +2425,36 @@ function rowToPost(row) {
     mine: row.user_id === currentUserId
   });
   p.id = row.id; p.remoteId = row.id;
+  p.authorId = row.user_id || "";
+  /* The author's age group comes from the profiles map loaded just
+     before the posts. Authors whose group is unknown (their profile
+     row is gone, or the age_group column is not there yet) count as
+     the child group: every post made before the renewal was written
+     under the kid-safe rules that apply to everyone, so the child
+     group is the safe side for them. Official posts skip this —
+     they are visible to every group. */
+  p.authorAgeGroup = official ? "" : (authorAgeById[row.user_id] || "child");
   return p;
+}
+function loadAuthorAges(done) {
+  /* Load every profile's age group so remote posts can be filtered
+     to my own age group. When the age_group column is missing, retry
+     without it: every author then counts as the child group. */
+  var sel = ageColumnOk ? "id,age_group" : "id";
+  supaRest("profiles?select=" + sel + "&limit=1000", "GET").then(function (res) {
+    if (res.ok && res.data) {
+      var map = {};
+      res.data.forEach(function (row) { map[row.id] = isValidAgeGroup(row.age_group) ? row.age_group : "child"; });
+      authorAgeById = map;
+      if (done) done();
+    } else if (ageColumnOk) { ageColumnOk = false; loadAuthorAges(done); }
+    else if (done) done();
+  }).catch(function () { if (done) done(); });
 }
 function loadRemoteData() {
   if (!currentUserId || !authAccessToken || !supaBase()) return;
   var myId = currentUserId;
+  loadAuthorAges(function () {
   supaRest("posts?select=*&order=created_at.desc&limit=200", "GET").then(function (res) {
     if (!res.ok || !res.data || !loggedInEmail || currentUserId !== myId) return;
     /* One malformed row must not take the whole timeline down:
@@ -2342,6 +2482,7 @@ function loadRemoteData() {
       renderAll();
     }).catch(function () {});
   }).catch(function () { /* offline: timeline stays as-is this visit */ });
+  });
   var offQuery = "official_accounts?select=*&order=created_at.asc&limit=100" + (isAdmin() ? "" : "&user_id=eq." + encodeURIComponent(myId));
   supaRest(offQuery, "GET").then(function (res) {
     if (!res.ok || !res.data || !loggedInEmail || currentUserId !== myId) return;
@@ -2491,7 +2632,7 @@ function authSubmit() {
   }
   authBusy = true; renderAuth();
   var chain;
-  if (authMode === "register") chain = supaAuthFetch("/auth/v1/signup", { email: email, password: password, data: { nickname: signupNickname } });
+  if (authMode === "register") chain = supaAuthFetch("/auth/v1/signup", { email: email, password: password, data: { nickname: signupNickname, age_group: signupAgeGroup } });
   else if (authMode === "login") chain = supaAuthFetch("/auth/v1/token?grant_type=password", { email: email, password: password });
   else chain = supaAuthFetch("/auth/v1/recover", { email: email });
   chain.then(function (res) {
@@ -2583,7 +2724,7 @@ $("authBtn").addEventListener("click", function () {
     authExpiresAt = 0;
     clearStoredSession();
     currentUserId = "";
-    profile = { nickname: "ニックネーム", shape: "heart", color: "sky" };
+    profile = { nickname: "ニックネーム", shape: "heart", color: "sky", ageGroup: null };
     posts = [];
     officialApps = [];
     followingOfficial = {};
@@ -2602,6 +2743,9 @@ $("authSwitchBtn").addEventListener("click", function () {
 $("authForgotLink").addEventListener("click", function () { switchAuthMode("forgot"); });
 $("authFormStage").addEventListener("submit", function (e) { e.preventDefault(); authSubmit(); });
 $("authResendBtn").addEventListener("click", function () { authResendConfirmation(); });
+document.querySelectorAll("[data-age-pick]").forEach(function (b) {
+  b.addEventListener("click", function () { signupAgeGroup = b.getAttribute("data-age-pick") === "adult" ? "adult" : "child"; renderAuth(); });
+});
 
 /* ================= global click handling ================= */
 document.addEventListener("click", function (e) {
@@ -2617,6 +2761,9 @@ document.addEventListener("click", function (e) {
     setTimeout(function () { var c = $("composerText"); c.scrollIntoView({ behavior: "smooth", block: "center" }); c.focus(); }, 60);
     return;
   }
+  var ageChoose = t.closest("[data-age-choose]");
+  if (ageChoose) { chooseAgeGroup(ageChoose.getAttribute("data-age-choose")); return; }
+  if (t.closest("[data-adult-break-close]")) { var abn2 = $("adultBreakNote"); if (abn2) abn2.classList.add("hidden"); return; }
   var missionBtn = t.closest("[data-mission]");
   if (missionBtn) {
     var mid = parseInt(missionBtn.getAttribute("data-mission"), 10);
@@ -2829,6 +2976,7 @@ $("profileBackBtn").addEventListener("click", hideProfileView);
 function safeRender(fn) { try { fn(); } catch (e) {} }
 function renderAll() {
   safeRender(renderNav);
+  safeRender(renderAgeChrome);
   safeRender(renderProfileStats);
   safeRender(renderTimeline);
   safeRender(renderSafe);
@@ -2884,7 +3032,18 @@ setInterval(function () {
   if (away > 2 * 60 * 1000 && breakPhase === "using") { sessionStart = now; }
   if (breakPhase === "using") {
     var remain = SESSION_MS - (now - sessionStart);
-    if (remain <= 0) {
+    if (remain <= 0 && effectiveAgeGroup() === "adult") {
+      /* Adults are never locked out: the 10 minutes only trigger a
+         gentle break notice, and the cycle quietly restarts. The
+         hard break below stays for the child group (and for anyone
+         who has not chosen a group yet — the safe side). */
+      sessionStart = now;
+      var abn = $("adultBreakNote");
+      if (abn) abn.classList.remove("hidden");
+      $("timerText").textContent = fmtClock(SESSION_MS);
+      $("timerFill").style.width = "100%";
+      $("timerBar").setAttribute("aria-valuenow", Math.ceil(SESSION_MS / 1000));
+    } else if (remain <= 0) {
       breakPhase = "break"; breakUntil = now + BREAK_MS;
       $("breakOverlay").classList.add("show");
       $("breakActive").classList.remove("hidden");
