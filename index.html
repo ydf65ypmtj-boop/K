@@ -696,6 +696,21 @@ return String(s == null? "": s).replace(/[&<>"']/g, function (c) {
 return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c];
 });
 }
+/* 写真URLの許可形式チェック（2026-11-19 セキュリティ監査 K-2 対策）。
+   photo 列は無検証の text で、REST から直接書かれた文字列もここに来る。
+   K 自身が作る形式だけを通す: 投稿画面が FileReader で作る
+   data:image/(png|jpeg|gif|webp) の data URL と、http(s) URL のみ。
+   それ以外は null（写真なしとして描画）。戻り値は挿入側でも
+   必ず esc() を通すこと（許可形式でも引用符を含みうるため）。 */
+function safePhotoUrl(u) {
+  if (typeof u !== "string" || !u) return null;
+  if (/^data:image\/(png|jpe?g|gif|webp)[;,]/.test(u)) return u;
+  try {
+    var parsed = new URL(u);
+    if (parsed.protocol === "https:" || parsed.protocol === "http:") return u;
+  } catch (e) {}
+  return null;
+}
 var MAX_COUNT = 1000000000; // 10億
 function cap(n) { return Math.min(MAX_COUNT, Math.max(0, Math.floor(n)));}
 function fmt(n) { return cap(n).toLocaleString("ja-JP");}
@@ -1708,6 +1723,7 @@ function followBtnHtml(key, isFollowing, name) {
   return '<button type="button" class="btn-follow' + (f ? " following" : "") + '" data-follow="' + esc(key) + '" aria-pressed="' + f + '" aria-label="' + (f ? esc(name) + "の フォローを やめる" : esc(name) + "を フォローする") + '">' + (f ? "フォロー中" : "フォローする") + "</button>";
 }
 function postHtml(p) {
+  var photoSrc = safePhotoUrl(p.photo);
   var mood = null;
   MOODS.forEach(function (m) { if (m.key === p.mood) mood = m; });
   var hot = p.buzz >= 75;
@@ -1783,7 +1799,7 @@ function postHtml(p) {
   return '<article class="post" data-post-id="' + p.id + '"><div class="post-row">' + avatarHtml(p.shape, p.color, 40) +
     '<div class="post-main">' + head + shopMeta + followSlot +
     (p.body ? '<p class="post-body">' + esc(p.body) + "</p>" : "") +
-    (p.photo ? '<img class="photo" src="' + p.photo + '" alt="投稿した写真" />' : "") +
+    (photoSrc ? '<img class="photo" src="' + esc(photoSrc) + '" alt="投稿した写真" />' : "") +
     '<div class="buzz"><div class="buzz-track" role="progressbar" aria-label="バズり度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.floor(p.buzz) + '"><div class="buzz-fill' + (hot ? " hot" : "") + '" style="width:' + Math.min(100, p.buzz) + '%"></div></div><span class="buzz-label' + (hot ? " hot" : "") + '">バズり度 ' + buzzLabel(p.buzz) + "</span></div>" +
     '<p class="post-counts">閲覧 ' + fmt(p.views) + "回 · スタンプ " + stampTotal + " · ひとこと " + fmt(p.comments.length) + " · AI返信 " + fmt(p.aiReplies.length) + " で けいさん中 · AIファンの おうえんだんが どんどん 広げてるよ（数字は 10億まで）</p>" +
     aiHtml + aiAction + commentsHtml + replyHtml + actions + picker +
@@ -1878,7 +1894,7 @@ function renderSafe() {
 /* ================= discover ================= */
 var quizPicked = {};
 function renderDiscover() {
-  var photoPosts = posts.filter(function (p) { return p.photo && postVisibleToMe(p); });
+  var photoPosts = posts.filter(function (p) { return safePhotoUrl(p.photo) && postVisibleToMe(p); });
   var genres = ["news", "sports", "music", "weather", "food", "animals"];
   var pickup = [];
   genres.forEach(function (g) {
@@ -1888,7 +1904,9 @@ function renderDiscover() {
   html += '<div class="block-pad"><h3>しゃしんポスト</h3>';
   if (!photoPosts.length) html += '<p class="sub">まだ写真つきポストがないよ。ホームの「ポストする」で写真を1まい つけて投稿すると、ここに集まるよ。</p>';
   else html += '<div class="photo-grid">' + photoPosts.map(function (p) {
-    return '<figure><img src="' + p.photo + '" alt="投稿した写真' + (p.body ? "：" + esc(p.body) : "") + '" loading="lazy" />' + (p.body ? "<figcaption>" + esc(p.body) + "</figcaption>" : "") + "</figure>";
+    var gridSrc = safePhotoUrl(p.photo);
+    if (!gridSrc) return "";
+    return '<figure><img src="' + esc(gridSrc) + '" alt="投稿した写真' + (p.body ? "：" + esc(p.body) : "") + '" loading="lazy" />' + (p.body ? "<figcaption>" + esc(p.body) + "</figcaption>" : "") + "</figure>";
   }).join("") + "</div>";
   html += "</div>";
   html += '<div class="intro-block"><p class="ib-title">まいにちクイズ</p><p>答えをタップすると、すぐ せいかいが分かるよ。</p></div>';
@@ -2421,7 +2439,7 @@ function rowToPost(row) {
     category: String(row.category || ""), location: String(row.location || ""), hours: String(row.hours || ""),
     followKey: official ? ("off:" + (row.author_handle || row.author_name)) : "",
     timeLabel: fmtRemoteTime(row.created_at), body: String(row.body || ""), mood: String(row.mood || ""),
-    photo: typeof row.photo === "string" && row.photo ? row.photo : null, views: Number(row.views) || 0, buzz: Number(row.buzz) || 0,
+    photo: safePhotoUrl(row.photo), views: Number(row.views) || 0, buzz: Number(row.buzz) || 0,
     mine: row.user_id === currentUserId
   });
   p.id = row.id; p.remoteId = row.id;
